@@ -1,0 +1,10 @@
+$kind: http-request
+name: My Bookings
+method: GET
+url: '{{base_url}}/my-bookings'
+order: 2000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{bearer_token}}'

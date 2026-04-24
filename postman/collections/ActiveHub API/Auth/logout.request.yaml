@@ -1,0 +1,9 @@
+$kind: http-request
+method: POST
+url: '{{base_url}}/logout'
+order: 4000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{bearer_token}}'

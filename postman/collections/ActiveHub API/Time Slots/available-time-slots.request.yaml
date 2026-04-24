@@ -1,0 +1,5 @@
+$kind: http-request
+name: Available Time Slots
+method: GET
+url: '{{base_url}}/courts/{{court_id}}/slots'
+order: 1000

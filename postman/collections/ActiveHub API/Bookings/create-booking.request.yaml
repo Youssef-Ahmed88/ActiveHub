@@ -1,0 +1,21 @@
+$kind: http-request
+name: Create Booking
+method: POST
+url: '{{base_url}}/bookings'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{bearer_token}}'
+body:
+  type: json
+  content: |-
+    {
+      "court_id": 1,
+      "start_time": "2026-04-24 10:00:00",
+      "end_time": "2026-04-24 11:00:00"
+    }
