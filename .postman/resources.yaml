@@ -2,6 +2,15 @@
 workspace:
   id: 8c117a6d-390f-4324-8fa3-24c3396ae4c3
 
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
+cloudResources:
+  environments:
+    ..\postman\environments\New Environment.environment.yaml: 94f9130c-908d-53b3-bd30-c9e7aa19e609
+  collections:
+    ..\postman\collections\New Collection: 54265928-86d4c67d-60c8-4bf9-a1f4-a7fa92f33d45
+    ..\postman\collections\ActiveHub API: 54265928-629b6869-e5b4-4c83-90e8-8279a9ee4948
+
 # All resources in the `postman/` folder are automatically registered in Local View.
 # Point to additional files outside the `postman/` folder to register them individually. Example:
 #localResources:
