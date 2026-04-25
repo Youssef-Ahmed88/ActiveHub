@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 // Controllers
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\SportController;
+use App\Http\Controllers\Api\SportController;
 use App\Http\Controllers\CourtController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\TimeSlotController;

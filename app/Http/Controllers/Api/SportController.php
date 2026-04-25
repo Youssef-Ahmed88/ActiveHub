@@ -1,17 +1,18 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Helpers\ApiResponse;
 use App\Models\Sport;
 use Illuminate\Http\Request;
 
 class SportController extends Controller
 {
-    public function index()
-    {
-        return ApiResponse::success(Sport::all(), 'Sports retrieved successfully');
-    }
+public function index()
+{
+    return ApiResponse::success('Sports retrieved successfully', Sport::all());
+}
 
     public function show(Sport $sport)
     {
