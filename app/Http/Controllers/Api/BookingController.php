@@ -19,43 +19,51 @@ class BookingController extends Controller
     }
 
     // POST /api/bookings
-    public function store(Request $request)
-    {
-        $request->validate([
-            'court_id' => 'required|exists:courts,id',
-            'start_time' => 'required',
-            'end_time' => 'required',
-        ]);
+public function store(Request $request)
+{
+    $request->validate([
+        'court_id'   => 'required|exists:courts,id',
+        'start_time' => 'required',
+        'end_time'   => 'required',
+    ]);
 
-        // Check double booking
-        $exists = Booking::where('court_id', $request->court_id)
-            ->where(function ($q) use ($request) {
-                $q->whereBetween('start_time', [$request->start_time, $request->end_time])
-                  ->orWhereBetween('end_time', [$request->start_time, $request->end_time]);
-            })->exists();
+    // Check double booking
+    $exists = Booking::where('court_id', $request->court_id)
+        ->where(function ($q) use ($request) {
+            $q->whereBetween('start_time', [$request->start_time, $request->end_time])
+            ->orWhereBetween('end_time', [$request->start_time, $request->end_time]);
+        })->exists();
 
-        if ($exists) {
-            return response()->json([
-                'message' => 'Slot already booked'
-            ], 400);
-        }
-
-        // create booking
-        $booking = Booking::create([
-            'user_id' => Auth::id(),
-            'court_id' => $request->court_id,
-            'start_time' => $request->start_time,
-            'end_time' => $request->end_time,
-            'status' => 'confirmed'
-        ]);
-
-        //  update timeslot availability
-        TimeSlot::where('court_id', $request->court_id)
-            ->where('start_time', $request->start_time)
-            ->update(['is_available' => false]);
-
-        return response()->json($booking, 201);
+    if ($exists) {
+        return response()->json([
+            'message' => 'Slot already booked'
+        ], 400);
     }
+
+    // حساب الـ total_price
+    $court       = \App\Models\Court::findOrFail($request->court_id);
+    $start       = \Carbon\Carbon::parse($request->start_time);
+    $end         = \Carbon\Carbon::parse($request->end_time);
+    $hours = $start->diffInHours($end);
+    $total_price = $hours * $court->price_per_hour;
+
+    // Create booking
+    $booking = Booking::create([
+        'user_id'     => Auth::id(),
+        'court_id'    => $request->court_id,
+        'start_time'  => $request->start_time,
+        'end_time'    => $request->end_time,
+        'total_price' => $total_price,
+        'status'      => 'confirmed',
+    ]);
+
+    // Update timeslot availability
+    TimeSlot::where('court_id', $request->court_id)
+        ->where('start_time', $request->start_time)
+        ->update(['is_available' => false]);
+
+    return response()->json($booking, 201);
+}
 
     // DELETE /api/bookings/{id}
     public function destroy($id)
