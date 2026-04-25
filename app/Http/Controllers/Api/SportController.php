@@ -45,6 +45,6 @@ class SportController extends Controller
     public function destroy(Sport $sport)
     {
         $sport->delete();
-        return ApiResponse::success(null, 'Sport deleted successfully');
+        return ApiResponse::success('Sport deleted successfully', null);
     }
 }
