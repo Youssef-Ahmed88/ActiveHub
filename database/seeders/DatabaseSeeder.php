@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             SportSeeder::class,
             CourtSeeder::class,
+            TimeSlotSeeder::class,
         ]);
     }
 }
