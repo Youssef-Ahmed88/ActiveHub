@@ -27,7 +27,7 @@ class BookingController extends Controller
             'end_time' => 'required',
         ]);
 
-        // 🔥 Check double booking
+        // Check double booking
         $exists = Booking::where('court_id', $request->court_id)
             ->where(function ($q) use ($request) {
                 $q->whereBetween('start_time', [$request->start_time, $request->end_time])
@@ -49,7 +49,7 @@ class BookingController extends Controller
             'status' => 'confirmed'
         ]);
 
-        // ❗ update timeslot availability
+        //  update timeslot availability
         TimeSlot::where('court_id', $request->court_id)
             ->where('start_time', $request->start_time)
             ->update(['is_available' => false]);
