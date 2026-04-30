@@ -18,7 +18,7 @@ class AuthService
     public function register(array $data): array
     {
         $user = User::create([
-            'name'     => $data['name'],
+            'full_name' => $data['name'],    
             'email'    => $data['email'],
             'password' => $data['password'], // remember: the User model auto-hashes this
             'role'     => $data['role'] ?? 'player', // default to 'player' if not provided
