@@ -46,6 +46,6 @@ public function index()
     public function destroy(Sport $sport)
     {
         $sport->delete();
-        return ApiResponse::success('Sport deleted successfully', null);
+        return ApiResponse::success(null, 'Sport deleted successfully');
     }
 }
