@@ -1,0 +1,5 @@
+$kind: http-request
+name: Chatbot
+url: ""
+method: GET
+order: 1777581323134

@@ -9,14 +9,15 @@ class Court extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'name',
-        'sport_id',
-        'description',
-        'price_per_hour',
-        'latitude',
-        'longitude',
-    ];
+protected $fillable = [
+    'name',
+    'sport_id',
+    'description',
+    'address',
+    'price_per_hour',
+    'latitude',
+    'longitude',
+];
 
     protected function casts(): array
     {

@@ -8,6 +8,9 @@ use App\Http\Controllers\Api\CourtController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\ChatbotController;
+use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\TimeSlotController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,8 +40,10 @@ Route::get('/sports/{sport}', [SportController::class, 'show']);
 Route::get('/courts',         [CourtController::class, 'index']);
 Route::get('/courts/{court}', [CourtController::class, 'show']);
 
-Route::get('/reviews',            [ReviewController::class, 'index']);
-Route::get('/reviews/{review}',   [ReviewController::class, 'show']);
+Route::get('/courts/{id}/slots', [TimeSlotController::class, 'available']);
+
+Route::get('/reviews',          [ReviewController::class, 'index']);
+Route::get('/reviews/{review}', [ReviewController::class, 'show']);
 
 /*
 |--------------------------------------------------------------------------
@@ -50,14 +55,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', fn(Request $request) => $request->user());
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
+    // Bookings
+    Route::post('/bookings',            [BookingController::class, 'store']);
+    Route::get('/my-bookings',          [BookingController::class, 'myBookings']);
+    Route::delete('/bookings/{id}',     [BookingController::class, 'destroy']);
+
     // Reviews
-    Route::post('/reviews',               [ReviewController::class, 'store']);
-    Route::delete('/reviews/{review}',    [ReviewController::class, 'destroy']);
+    Route::post('/reviews',             [ReviewController::class, 'store']);
+    Route::delete('/reviews/{review}',  [ReviewController::class, 'destroy']);
 
     // Notifications
-    Route::get('/notifications',                       [NotificationController::class, 'index']);
-    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
-    Route::delete('/notifications/{notification}',     [NotificationController::class, 'destroy']);
+    Route::get('/notifications',                        [NotificationController::class, 'index']);
+    Route::patch('/notifications/{notification}/read',  [NotificationController::class, 'markAsRead']);
+    Route::delete('/notifications/{notification}',      [NotificationController::class, 'destroy']);
+
+    // Chatbot
+    Route::post('/chatbot',             [ChatbotController::class, 'chat']);
 
     // Admin only
     Route::middleware('role:admin')->group(function () {
@@ -69,8 +82,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/courts/{court}',    [CourtController::class, 'update']);
         Route::delete('/courts/{court}', [CourtController::class, 'destroy']);
 
-        Route::get('/payments',              [PaymentController::class, 'index']);
-        Route::get('/payments/{payment}',    [PaymentController::class, 'show']);
-        Route::post('/payments',             [PaymentController::class, 'store']);
+        Route::get('/payments',          [PaymentController::class, 'index']);
+        Route::get('/payments/{payment}',[PaymentController::class, 'show']);
+        Route::post('/payments',         [PaymentController::class, 'store']);
     });
 });

@@ -10,11 +10,11 @@ class CourtSeeder extends Seeder
     public function run(): void
     {
         $courts = [
-            // Football Courts
             [
                 'name'          => 'ملعب النصر',
                 'sport_id'      => 1,
                 'description'   => 'ملعب كرة قدم مجهز بالكامل',
+                'address'       => 'مدينة نصر، القاهرة',
                 'price_per_hour'=> 200,
                 'latitude'      => 30.0444,
                 'longitude'     => 31.2357,
@@ -23,15 +23,16 @@ class CourtSeeder extends Seeder
                 'name'          => 'ملعب الأهلي',
                 'sport_id'      => 1,
                 'description'   => 'ملعب كرة قدم في قلب القاهرة',
+                'address'       => 'وسط البلد، القاهرة',
                 'price_per_hour'=> 250,
                 'latitude'      => 30.0600,
                 'longitude'     => 31.2200,
             ],
-            // Padel Courts
             [
                 'name'          => 'ملعب بادل الرياضي',
                 'sport_id'      => 2,
                 'description'   => 'ملعب بادل احترافي',
+                'address'       => 'المهندسين، الجيزة',
                 'price_per_hour'=> 300,
                 'latitude'      => 30.0500,
                 'longitude'     => 31.2400,
@@ -40,15 +41,16 @@ class CourtSeeder extends Seeder
                 'name'          => 'ملعب بادل النخبة',
                 'sport_id'      => 2,
                 'description'   => 'ملعب بادل مكيف',
+                'address'       => 'الزمالك، القاهرة',
                 'price_per_hour'=> 350,
                 'latitude'      => 30.0550,
                 'longitude'     => 31.2300,
             ],
-            // Basketball Courts
             [
                 'name'          => 'ملعب السلة الذهبي',
                 'sport_id'      => 3,
                 'description'   => 'ملعب كرة سلة بأرضية خشبية',
+                'address'       => 'مصر الجديدة، القاهرة',
                 'price_per_hour'=> 150,
                 'latitude'      => 30.0480,
                 'longitude'     => 31.2450,
@@ -57,6 +59,7 @@ class CourtSeeder extends Seeder
                 'name'          => 'ملعب السلة الأولمبي',
                 'sport_id'      => 3,
                 'description'   => 'ملعب كرة سلة في الهواء الطلق',
+                'address'       => 'المعادي، القاهرة',
                 'price_per_hour'=> 180,
                 'latitude'      => 30.0420,
                 'longitude'     => 31.2500,

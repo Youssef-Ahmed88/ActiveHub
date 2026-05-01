@@ -9,8 +9,8 @@ class TimeSlotSeeder extends Seeder
 {
     public function run(): void
     {
-        $courts = [1, 2, 3, 4, 5, 6];
-        $times  = [
+$courts = \App\Models\Court::pluck('id')->toArray();       
+$times  = [
             ['start' => '08:00:00', 'end' => '09:00:00'],
             ['start' => '09:00:00', 'end' => '10:00:00'],
             ['start' => '10:00:00', 'end' => '11:00:00'],
