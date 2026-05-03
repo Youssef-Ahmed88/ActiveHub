@@ -1,0 +1,8 @@
+$kind: http-request
+url: "{{base_url}}/bookings/{{booking_id}}"
+method: DELETE
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearer_token}}"
+order: 3000

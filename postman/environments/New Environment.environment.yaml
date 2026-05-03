@@ -1,0 +1,6 @@
+name: New Environment
+values:
+  - key: base_url
+    value: " https://phoenix-operator-bulldozer.ngrok-free.dev"
+    enabled: true
+color: null
