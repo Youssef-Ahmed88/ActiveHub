@@ -9,14 +9,20 @@ use Illuminate\Http\Request;
 
 class SportController extends Controller
 {
-public function index()
-{
-    return ApiResponse::success('Sports retrieved successfully', Sport::all());
-}
+    public function index()
+    {
+        return ApiResponse::success(
+            message: 'Sports retrieved successfully',
+            data: Sport::all(),
+        );
+    }
 
     public function show(Sport $sport)
     {
-        return ApiResponse::success($sport, 'Sport retrieved successfully');
+        return ApiResponse::success(
+            message: 'Sport retrieved successfully',
+            data: $sport,
+        );
     }
 
     public function store(Request $request)
@@ -28,7 +34,11 @@ public function index()
         ]);
 
         $sport = Sport::create($validated);
-        return ApiResponse::success($sport, 'Sport created successfully', 201);
+        return ApiResponse::success(
+            message: 'Sport created successfully',
+            data: $sport,
+            statusCode: 201,
+        );
     }
 
     public function update(Request $request, Sport $sport)
@@ -40,12 +50,18 @@ public function index()
         ]);
 
         $sport->update($validated);
-        return ApiResponse::success($sport, 'Sport updated successfully');
+        return ApiResponse::success(
+            message: 'Sport updated successfully',
+            data: $sport,
+        );
     }
 
     public function destroy(Sport $sport)
     {
         $sport->delete();
-        return ApiResponse::success(null, 'Sport deleted successfully');
+        return ApiResponse::success(
+            message: 'Sport deleted successfully',
+            data: null,
+        );
     }
 }

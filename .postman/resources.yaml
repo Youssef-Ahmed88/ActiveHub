@@ -6,7 +6,7 @@ workspace:
 
 cloudResources:
   environments:
-    ..\postman\environments\New Environment.environment.yaml: 94f9130c-908d-53b3-bd30-c9e7aa19e609
+    ..\postman\environments\New Environment.environment.yaml: 54265928-94f9130c-908d-53b3-bd30-c9e7aa19e609
   collections:
     ..\postman\collections\New Collection: 54265928-86d4c67d-60c8-4bf9-a1f4-a7fa92f33d45
     ..\postman\collections\ActiveHub API: 54265928-629b6869-e5b4-4c83-90e8-8279a9ee4948

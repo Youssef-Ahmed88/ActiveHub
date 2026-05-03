@@ -12,11 +12,6 @@ use App\Http\Controllers\Api\ChatbotController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\TimeSlotController;
 
-/*
-|--------------------------------------------------------------------------
-| Health Check
-|--------------------------------------------------------------------------
-*/
 Route::get('/ping', function () {
     return response()->json([
         'success' => true,
@@ -24,11 +19,6 @@ Route::get('/ping', function () {
     ]);
 });
 
-/*
-|--------------------------------------------------------------------------
-| Public Routes (No Auth)
-|--------------------------------------------------------------------------
-*/
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login',    [AuthController::class, 'login']);
@@ -45,32 +35,30 @@ Route::get('/courts/{id}/slots', [TimeSlotController::class, 'available']);
 Route::get('/reviews',          [ReviewController::class, 'index']);
 Route::get('/reviews/{review}', [ReviewController::class, 'show']);
 
-/*
-|--------------------------------------------------------------------------
-| Protected Routes (Auth Required)
-|--------------------------------------------------------------------------
-*/
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/user', fn(Request $request) => $request->user());
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
     // Bookings
-    Route::post('/bookings',            [BookingController::class, 'store']);
-    Route::get('/my-bookings',          [BookingController::class, 'myBookings']);
-    Route::delete('/bookings/{id}',     [BookingController::class, 'destroy']);
+    Route::post('/bookings',        [BookingController::class, 'store']);
+    Route::get('/my-bookings',      [BookingController::class, 'myBookings']);
+    Route::delete('/bookings/{id}', [BookingController::class, 'destroy']);
+
+    // Payments - أي user يقدر يدفع ✅
+    Route::post('/payments', [PaymentController::class, 'store']);
 
     // Reviews
-    Route::post('/reviews',             [ReviewController::class, 'store']);
-    Route::delete('/reviews/{review}',  [ReviewController::class, 'destroy']);
+    Route::post('/reviews',            [ReviewController::class, 'store']);
+    Route::delete('/reviews/{review}', [ReviewController::class, 'destroy']);
 
     // Notifications
-    Route::get('/notifications',                        [NotificationController::class, 'index']);
-    Route::patch('/notifications/{notification}/read',  [NotificationController::class, 'markAsRead']);
-    Route::delete('/notifications/{notification}',      [NotificationController::class, 'destroy']);
+    Route::get('/notifications',                       [NotificationController::class, 'index']);
+    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
+    Route::delete('/notifications/{notification}',     [NotificationController::class, 'destroy']);
 
     // Chatbot
-    Route::post('/chatbot',             [ChatbotController::class, 'chat']);
+    Route::post('/chatbot', [ChatbotController::class, 'chat']);
 
     // Admin only
     Route::middleware('role:admin')->group(function () {
@@ -82,8 +70,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/courts/{court}',    [CourtController::class, 'update']);
         Route::delete('/courts/{court}', [CourtController::class, 'destroy']);
 
-        Route::get('/payments',          [PaymentController::class, 'index']);
-        Route::get('/payments/{payment}',[PaymentController::class, 'show']);
-        Route::post('/payments',         [PaymentController::class, 'store']);
+        Route::get('/payments',           [PaymentController::class, 'index']);
+        Route::get('/payments/{payment}', [PaymentController::class, 'show']);
     });
 });

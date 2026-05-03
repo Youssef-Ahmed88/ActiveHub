@@ -12,15 +12,15 @@ return new class extends Migration
 public function up(): void
 {
     Schema::table('courts', function (Blueprint $table) {
-        $table->string('address')->nullable()->after('description');
-        $table->string('image')->nullable()->after('address');
+        $table->decimal('rating', 3, 2)->default(0.00)->after('image');
+        $table->boolean('is_available')->default(true)->after('rating');
     });
 }
 
 public function down(): void
 {
     Schema::table('courts', function (Blueprint $table) {
-        $table->dropColumn(['address', 'image']);
+        $table->dropColumn(['rating', 'is_available']);
     });
 }
 };

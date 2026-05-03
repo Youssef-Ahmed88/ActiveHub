@@ -1,0 +1,5 @@
+$kind: http-request
+name: Reviews
+url: ""
+method: GET
+order: 3918623505645567
