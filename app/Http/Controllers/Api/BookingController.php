@@ -66,7 +66,7 @@ public function store(Request $request)
 }
 
     // DELETE /api/bookings/{id}
-    public function destroy($id)
+    public function destroy(int $id)
     {
         $booking = Booking::findOrFail($id);
 
