@@ -14,8 +14,8 @@ return new class extends Migration
             $table->foreignId('sport_id')->constrained('sports')->onDelete('cascade');
             $table->text('description')->nullable();
             $table->decimal('price_per_hour', 8, 2);
-            $table->decimal('latitude', 10, 7);
-            $table->decimal('longitude', 10, 7);
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
             $table->timestamps();
         });
     }

@@ -12,6 +12,7 @@ class Court extends Model
 protected $fillable = [
     'name',
     'sport_id',
+    'owner_id',      
     'description',
     'address',
     'price_per_hour',
@@ -19,6 +20,10 @@ protected $fillable = [
     'longitude',
 ];
 
+public function owner()
+{
+    return $this->belongsTo(User::class, 'owner_id');
+}
     protected function casts(): array
     {
         return [

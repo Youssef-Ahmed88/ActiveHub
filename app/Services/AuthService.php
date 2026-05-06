@@ -67,9 +67,12 @@ class AuthService
      * Handle logout — simply delete the current token.
      * After this, the token the mobile app holds becomes invalid.
      */
-    public function logout(User $user): void
-    {
-        // currentAccessToken() refers to the specific token used in this request
-        $user->currentAccessToken()->delete();
+public function logout(User $user): void
+{
+    $tokenId = $user->currentAccessToken()?->id;
+    
+    if ($tokenId) {
+        $user->tokens()->where('id', $tokenId)->delete();
     }
+}
 }

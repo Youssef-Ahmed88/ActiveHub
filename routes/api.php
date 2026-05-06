@@ -1,8 +1,7 @@
 <?php
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Api\SportController;
 use App\Http\Controllers\Api\CourtController;
 use App\Http\Controllers\Api\PaymentController;
@@ -24,19 +23,16 @@ Route::prefix('auth')->group(function () {
     Route::post('/login',    [AuthController::class, 'login']);
 });
 
-Route::get('/sports',         [SportController::class, 'index']);
-Route::get('/sports/{sport}', [SportController::class, 'show']);
-
-Route::get('/courts',         [CourtController::class, 'index']);
-Route::get('/courts/{court}', [CourtController::class, 'show']);
-
+// Public routes
+Route::get('/sports',            [SportController::class, 'index']);
+Route::get('/sports/{sport}',    [SportController::class, 'show']);
+Route::get('/courts',            [CourtController::class, 'index']);
+Route::get('/courts/{court}',    [CourtController::class, 'show']);
 Route::get('/courts/{id}/slots', [TimeSlotController::class, 'available']);
-
-Route::get('/reviews',          [ReviewController::class, 'index']);
-Route::get('/reviews/{review}', [ReviewController::class, 'show']);
+Route::get('/reviews',           [ReviewController::class, 'index']);
+Route::get('/reviews/{review}',  [ReviewController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
-
     Route::get('/user', fn(Request $request) => $request->user());
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
@@ -45,7 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/my-bookings',      [BookingController::class, 'myBookings']);
     Route::delete('/bookings/{id}', [BookingController::class, 'destroy']);
 
-    // Payments - أي user يقدر يدفع ✅
+    // Payments
     Route::post('/payments', [PaymentController::class, 'store']);
 
     // Reviews
@@ -60,16 +56,19 @@ Route::middleware('auth:sanctum')->group(function () {
     // Chatbot
     Route::post('/chatbot', [ChatbotController::class, 'chat']);
 
+    // ✅ Owner only - يشوف ملاعبه بس
+    Route::middleware('role:owner')->group(function () {
+        Route::get('/owner/courts', [CourtController::class, 'ownerIndex']);
+    });
+
     // Admin only
     Route::middleware('role:admin')->group(function () {
         Route::post('/sports',           [SportController::class, 'store']);
         Route::put('/sports/{sport}',    [SportController::class, 'update']);
         Route::delete('/sports/{sport}', [SportController::class, 'destroy']);
-
         Route::post('/courts',           [CourtController::class, 'store']);
         Route::put('/courts/{court}',    [CourtController::class, 'update']);
         Route::delete('/courts/{court}', [CourtController::class, 'destroy']);
-
         Route::get('/payments',           [PaymentController::class, 'index']);
         Route::get('/payments/{payment}', [PaymentController::class, 'show']);
     });

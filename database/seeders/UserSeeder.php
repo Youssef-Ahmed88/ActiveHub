@@ -31,5 +31,11 @@ User::create([
     'password'  => Hash::make('password123'),
     'role'      => 'user',
 ]);
+User::create([
+    'full_name' => 'Owner User',
+    'email' => 'owner@example.com',
+    'password' => bcrypt('123456'),
+    'role' => 'owner'
+]);
     }
 }

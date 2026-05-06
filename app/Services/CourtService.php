@@ -44,4 +44,11 @@ class CourtService
             ->where('sport_id', $sportId)
             ->get();
     }
+    // Get courts for a specific owner
+public function getByOwner(int $ownerId)
+{
+    return Court::with('sport')
+        ->where('owner_id', $ownerId)
+        ->get();
+}
 }
