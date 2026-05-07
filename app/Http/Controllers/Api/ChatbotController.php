@@ -10,6 +10,7 @@ use App\Models\TimeSlot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ChatbotController extends Controller
 {
@@ -21,9 +22,10 @@ class ChatbotController extends Controller
 
         $userMessage = $request->message;
 
+        // ✅ تقليل كمية البيانات المرسلة لتجنب تجاوز حد التوكنات
         $sports = Sport::all(['id', 'name'])->toArray();
-        $courts = Court::all(['id', 'name', 'sport_id', 'price_per_hour', 'address'])->toArray();
-        $slots  = TimeSlot::where('is_available', true)->get(['court_id', 'slot_date', 'start_time', 'end_time'])->toArray();
+        $courts = Court::limit(10)->get(['id', 'name', 'sport_id', 'price_per_hour', 'address'])->toArray(); // آخر 10 ملاعب فقط
+        $slots  = TimeSlot::where('is_available', true)->limit(20)->get(['court_id', 'slot_date', 'start_time', 'end_time'])->toArray(); // آخر 20 موعد فقط
 
         $sportsText = collect($sports)->map(fn($s) => $s['name'])->join(', ');
         $courtsText = collect($courts)->map(fn($c) =>
@@ -44,7 +46,7 @@ class ChatbotController extends Controller
         الملاعب المتاحة مع عناوينها:
         {$courtsText}
 
-        المواعيد الفاضية الحقيقية من قاعدة البيانات:
+        المواعيد الفاضية الحقيقية من قاعدة البيانات (عينة):
         {$slotsText}
 
         سؤال المستخدم: {$userMessage}
@@ -54,21 +56,32 @@ class ChatbotController extends Controller
         - لا تخترع مواعيد أو أسعار أو عناوين
         - البيانات المذكورة أعلاه هي المصدر الوحيد للمعلومات
         - لو المعلومة موجودة في البيانات، اذكرها
-        - كن مختصراً ومفيداً
+        - كن مختصراً ومفيداً (لا تزيد ردك عن 3 جمل)
         ";
 
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . env('GROQ_API_KEY'),
-            'Content-Type'  => 'application/json',
-        ])->post('https://api.groq.com/openai/v1/chat/completions', [
-            'model'    => 'llama-3.3-70b-versatile',
-            'messages' => [
-                ['role' => 'user', 'content' => $prompt]
-            ],
-        ]);
+        try {
+            $response = Http::timeout(30)->withHeaders([
+                'Authorization' => 'Bearer ' . env('GROQ_API_KEY'),
+                'Content-Type'  => 'application/json',
+            ])->post('https://api.groq.com/openai/v1/chat/completions', [
+                'model'    => 'llama-3.3-70b-versatile',
+                'messages' => [
+                    ['role' => 'user', 'content' => $prompt]
+                ],
+            ]);
 
-        $botReply = $response->json()['choices'][0]['message']['content'] ?? 'عفواً، حدث خطأ.';
+            if ($response->failed()) {
+                Log::error('Groq API error: ' . $response->body());
+                $botReply = 'عذراً، خدمة المساعد مشغولة حالياً. حاول مرة أخرى.';
+            } else {
+                $botReply = $response->json()['choices'][0]['message']['content'] ?? 'عفواً، لم أفهم السؤال.';
+            }
+        } catch (\Exception $e) {
+            Log::error('Groq exception: ' . $e->getMessage());
+            $botReply = 'حدث خطأ في الاتصال بالمساعد الذكي. الرجاء المحاولة لاحقاً.';
+        }
 
+        // تسجيل المحادثة (حتى لو فشل الـ API)
         ChatbotLog::create([
             'user_id'  => Auth::id(),
             'query'    => $userMessage,

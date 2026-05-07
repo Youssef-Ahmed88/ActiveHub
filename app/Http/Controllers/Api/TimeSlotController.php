@@ -9,13 +9,16 @@ use Illuminate\Http\Request;
 class TimeSlotController extends Controller
 {
     // GET /api/courts/{id}/slots
-    public function available($court_id)
-    {
-        return TimeSlot::where('court_id', $court_id)
-            ->where('is_available', true)
-            ->orderBy('start_time')
-            ->get();
+public function available($courtId, Request $request)
+{
+    $date = $request->query('date'); // مثلاً '2026-05-07'
+    $query = TimeSlot::where('court_id', $courtId);
+    if ($date) {
+        $query->where('slot_date', $date);
     }
+    $slots = $query->get();
+    return response()->json($slots);
+}
 
     // (اختياري) create slots
     public function store(Request $request)

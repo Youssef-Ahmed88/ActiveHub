@@ -4,36 +4,28 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\TimeSlot;
+use App\Models\Court;
 
 class TimeSlotSeeder extends Seeder
 {
     public function run(): void
     {
-$courts = \App\Models\Court::pluck('id')->toArray();       
-$times  = [
-            ['start' => '08:00:00', 'end' => '09:00:00'],
-            ['start' => '09:00:00', 'end' => '10:00:00'],
-            ['start' => '10:00:00', 'end' => '11:00:00'],
-            ['start' => '11:00:00', 'end' => '12:00:00'],
-            ['start' => '12:00:00', 'end' => '13:00:00'],
-            ['start' => '13:00:00', 'end' => '14:00:00'],
-            ['start' => '14:00:00', 'end' => '15:00:00'],
-            ['start' => '15:00:00', 'end' => '16:00:00'],
-            ['start' => '16:00:00', 'end' => '17:00:00'],
-            ['start' => '17:00:00', 'end' => '18:00:00'],
-        ];
-
-        $date = '2026-05-01';
-
-        foreach ($courts as $court_id) {
-            foreach ($times as $time) {
-                TimeSlot::create([
-                    'court_id'     => $court_id,
-                    'slot_date'    => $date,
-                    'start_time'   => $time['start'],
-                    'end_time'     => $time['end'],
-                    'is_available' => true,
-                ]);
+        $courts = Court::all();
+        $startDate = now()->addDay(); // من الغد
+        $endDate = now()->addDays(30); // لمدة 30 يوماً
+        
+        for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
+            foreach ($courts as $court) {
+                for ($hour = 8; $hour <= 20; $hour++) { // ساعات 8 صباحاً حتى 8 مساءً
+                    TimeSlot::firstOrCreate([
+                        'court_id' => $court->id,
+                        'slot_date' => $date->toDateString(),
+                        'start_time' => sprintf('%02d:00:00', $hour),
+                        'end_time' => sprintf('%02d:00:00', $hour + 1),
+                    ], [
+                        'is_available' => true,
+                    ]);
+                }
             }
         }
     }
