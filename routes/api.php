@@ -1,7 +1,11 @@
 <?php
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\PasswordResetController;
+
 use App\Http\Controllers\Api\SportController;
 use App\Http\Controllers\Api\CourtController;
 use App\Http\Controllers\Api\PaymentController;
@@ -19,11 +23,12 @@ Route::get('/ping', function () {
 });
 
 Route::prefix('auth')->group(function () {
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login',    [AuthController::class, 'login']);
+    Route::post('/register',        [AuthController::class, 'register']);
+    Route::post('/login',           [AuthController::class, 'login']);
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetCode']);
+    Route::post('/reset-password',  [PasswordResetController::class, 'resetPassword']);
 });
 
-// Public routes
 Route::get('/sports',            [SportController::class, 'index']);
 Route::get('/sports/{sport}',    [SportController::class, 'show']);
 Route::get('/courts',            [CourtController::class, 'index']);
@@ -36,39 +41,32 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', fn(Request $request) => $request->user());
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
-    // Bookings
     Route::post('/bookings',        [BookingController::class, 'store']);
     Route::get('/my-bookings',      [BookingController::class, 'myBookings']);
     Route::delete('/bookings/{id}', [BookingController::class, 'destroy']);
 
-    // Payments
     Route::post('/payments', [PaymentController::class, 'store']);
 
-    // Reviews
     Route::post('/reviews',            [ReviewController::class, 'store']);
     Route::delete('/reviews/{review}', [ReviewController::class, 'destroy']);
 
-    // Notifications
     Route::get('/notifications',                       [NotificationController::class, 'index']);
     Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
     Route::delete('/notifications/{notification}',     [NotificationController::class, 'destroy']);
 
-    // Chatbot
     Route::post('/chatbot', [ChatbotController::class, 'chat']);
 
-    // ✅ Owner only - يشوف ملاعبه بس
     Route::middleware('role:owner')->group(function () {
         Route::get('/owner/courts', [CourtController::class, 'ownerIndex']);
     });
 
-    // Admin only
     Route::middleware('role:admin')->group(function () {
-        Route::post('/sports',           [SportController::class, 'store']);
-        Route::put('/sports/{sport}',    [SportController::class, 'update']);
-        Route::delete('/sports/{sport}', [SportController::class, 'destroy']);
-        Route::post('/courts',           [CourtController::class, 'store']);
-        Route::put('/courts/{court}',    [CourtController::class, 'update']);
-        Route::delete('/courts/{court}', [CourtController::class, 'destroy']);
+        Route::post('/sports',            [SportController::class, 'store']);
+        Route::put('/sports/{sport}',     [SportController::class, 'update']);
+        Route::delete('/sports/{sport}',  [SportController::class, 'destroy']);
+        Route::post('/courts',            [CourtController::class, 'store']);
+        Route::put('/courts/{court}',     [CourtController::class, 'update']);
+        Route::delete('/courts/{court}',  [CourtController::class, 'destroy']);
         Route::get('/payments',           [PaymentController::class, 'index']);
         Route::get('/payments/{payment}', [PaymentController::class, 'show']);
     });
