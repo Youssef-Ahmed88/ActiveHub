@@ -55,14 +55,15 @@ extension LoginStatePatterns<T> on LoginState<T> {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Initial<T> value)?  initial,TResult Function( Loading<T> value)?  loading,TResult Function( Success<T> value)?  success,TResult Function( AdminSuccess<T> value)?  adminSuccess,TResult Function( Error<T> value)?  error,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Initial<T> value)?  initial,TResult Function( Loading<T> value)?  loading,TResult Function( Success<T> value)?  success,TResult Function( AdminSuccess<T> value)?  adminSuccess,TResult Function( OwnerSuccess<T> value)?  ownerSuccess,TResult Function( Error<T> value)?  error,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial(_that);case Loading() when loading != null:
 return loading(_that);case Success() when success != null:
 return success(_that);case AdminSuccess() when adminSuccess != null:
-return adminSuccess(_that);case Error() when error != null:
+return adminSuccess(_that);case OwnerSuccess() when ownerSuccess != null:
+return ownerSuccess(_that);case Error() when error != null:
 return error(_that);case _:
   return orElse();
 
@@ -81,14 +82,15 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Initial<T> value)  initial,required TResult Function( Loading<T> value)  loading,required TResult Function( Success<T> value)  success,required TResult Function( AdminSuccess<T> value)  adminSuccess,required TResult Function( Error<T> value)  error,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Initial<T> value)  initial,required TResult Function( Loading<T> value)  loading,required TResult Function( Success<T> value)  success,required TResult Function( AdminSuccess<T> value)  adminSuccess,required TResult Function( OwnerSuccess<T> value)  ownerSuccess,required TResult Function( Error<T> value)  error,}){
 final _that = this;
 switch (_that) {
 case _Initial():
 return initial(_that);case Loading():
 return loading(_that);case Success():
 return success(_that);case AdminSuccess():
-return adminSuccess(_that);case Error():
+return adminSuccess(_that);case OwnerSuccess():
+return ownerSuccess(_that);case Error():
 return error(_that);case _:
   throw StateError('Unexpected subclass');
 
@@ -106,14 +108,15 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Initial<T> value)?  initial,TResult? Function( Loading<T> value)?  loading,TResult? Function( Success<T> value)?  success,TResult? Function( AdminSuccess<T> value)?  adminSuccess,TResult? Function( Error<T> value)?  error,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Initial<T> value)?  initial,TResult? Function( Loading<T> value)?  loading,TResult? Function( Success<T> value)?  success,TResult? Function( AdminSuccess<T> value)?  adminSuccess,TResult? Function( OwnerSuccess<T> value)?  ownerSuccess,TResult? Function( Error<T> value)?  error,}){
 final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial(_that);case Loading() when loading != null:
 return loading(_that);case Success() when success != null:
 return success(_that);case AdminSuccess() when adminSuccess != null:
-return adminSuccess(_that);case Error() when error != null:
+return adminSuccess(_that);case OwnerSuccess() when ownerSuccess != null:
+return ownerSuccess(_that);case Error() when error != null:
 return error(_that);case _:
   return null;
 
@@ -131,13 +134,14 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( T data)?  success,TResult Function( T data)?  adminSuccess,TResult Function( String error)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( T data)?  success,TResult Function( T data)?  adminSuccess,TResult Function( T data)?  ownerSuccess,TResult Function( String error)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case Loading() when loading != null:
 return loading();case Success() when success != null:
 return success(_that.data);case AdminSuccess() when adminSuccess != null:
-return adminSuccess(_that.data);case Error() when error != null:
+return adminSuccess(_that.data);case OwnerSuccess() when ownerSuccess != null:
+return ownerSuccess(_that.data);case Error() when error != null:
 return error(_that.error);case _:
   return orElse();
 
@@ -156,13 +160,14 @@ return error(_that.error);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( T data)  success,required TResult Function( T data)  adminSuccess,required TResult Function( String error)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( T data)  success,required TResult Function( T data)  adminSuccess,required TResult Function( T data)  ownerSuccess,required TResult Function( String error)  error,}) {final _that = this;
 switch (_that) {
 case _Initial():
 return initial();case Loading():
 return loading();case Success():
 return success(_that.data);case AdminSuccess():
-return adminSuccess(_that.data);case Error():
+return adminSuccess(_that.data);case OwnerSuccess():
+return ownerSuccess(_that.data);case Error():
 return error(_that.error);case _:
   throw StateError('Unexpected subclass');
 
@@ -180,13 +185,14 @@ return error(_that.error);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( T data)?  success,TResult? Function( T data)?  adminSuccess,TResult? Function( String error)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( T data)?  success,TResult? Function( T data)?  adminSuccess,TResult? Function( T data)?  ownerSuccess,TResult? Function( String error)?  error,}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case Loading() when loading != null:
 return loading();case Success() when success != null:
 return success(_that.data);case AdminSuccess() when adminSuccess != null:
-return adminSuccess(_that.data);case Error() when error != null:
+return adminSuccess(_that.data);case OwnerSuccess() when ownerSuccess != null:
+return ownerSuccess(_that.data);case Error() when error != null:
 return error(_that.error);case _:
   return null;
 
@@ -383,6 +389,72 @@ class _$AdminSuccessCopyWithImpl<T,$Res>
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') $Res call({Object? data = freezed,}) {
   return _then(AdminSuccess<T>(
+freezed == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
+as T,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class OwnerSuccess<T> implements LoginState<T> {
+  const OwnerSuccess(this.data);
+  
+
+ final  T data;
+
+/// Create a copy of LoginState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$OwnerSuccessCopyWith<T, OwnerSuccess<T>> get copyWith => _$OwnerSuccessCopyWithImpl<T, OwnerSuccess<T>>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OwnerSuccess<T>&&const DeepCollectionEquality().equals(other.data, data));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(data));
+
+@override
+String toString() {
+  return 'LoginState<$T>.ownerSuccess(data: $data)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $OwnerSuccessCopyWith<T,$Res> implements $LoginStateCopyWith<T, $Res> {
+  factory $OwnerSuccessCopyWith(OwnerSuccess<T> value, $Res Function(OwnerSuccess<T>) _then) = _$OwnerSuccessCopyWithImpl;
+@useResult
+$Res call({
+ T data
+});
+
+
+
+
+}
+/// @nodoc
+class _$OwnerSuccessCopyWithImpl<T,$Res>
+    implements $OwnerSuccessCopyWith<T, $Res> {
+  _$OwnerSuccessCopyWithImpl(this._self, this._then);
+
+  final OwnerSuccess<T> _self;
+  final $Res Function(OwnerSuccess<T>) _then;
+
+/// Create a copy of LoginState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? data = freezed,}) {
+  return _then(OwnerSuccess<T>(
 freezed == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
 as T,
   ));

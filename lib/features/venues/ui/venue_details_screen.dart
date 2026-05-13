@@ -83,7 +83,7 @@ class _VenueDetailsScreenState extends State<VenueDetailsScreen> {
               background: Image.network(
                 widget.venue.image ?? '',
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
+                errorBuilder: (_, _, _) => Container(
                   color: ColorsManager.fieldBg,
                   child: Icon(Icons.image_not_supported, color: ColorsManager.mutedText),
                 ),
@@ -266,7 +266,7 @@ class _VenueDetailsScreenState extends State<VenueDetailsScreen> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _filteredReviews.length,
-            separatorBuilder: (_, __) => SizedBox(height: 10.h),
+            separatorBuilder: (_, _) => SizedBox(height: 10.h),
             itemBuilder: (_, i) => _buildReviewCard(_filteredReviews[i]),
           ),
       ],
@@ -275,7 +275,9 @@ class _VenueDetailsScreenState extends State<VenueDetailsScreen> {
 
   Widget _buildRatingSummary() {
     final counts = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
-    for (final r in _reviews) counts[r['rating'] as int] = (counts[r['rating'] as int] ?? 0) + 1;
+    for (final r in _reviews) {
+      counts[r['rating'] as int] = (counts[r['rating'] as int] ?? 0) + 1;
+    }
 
     return Container(
       padding: EdgeInsets.all(16.w),

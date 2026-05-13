@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'owner_screen.dart';
-import 'owner_login_screen.dart'; // 👈 مهم جدًا
+import 'package:dio/dio.dart';
+import 'package:flutter_complete_project/core/networking/dio_factory.dart';
+import 'owner_screen.dart';                // ✅ نفس المجلد
+// ✅ نفس المجلد
 
 class OwnerSignupScreen extends StatefulWidget {
   const OwnerSignupScreen({super.key});
@@ -10,11 +12,11 @@ class OwnerSignupScreen extends StatefulWidget {
 }
 
 class _OwnerSignupScreenState extends State<OwnerSignupScreen> {
-  final _nameCtrl     = TextEditingController();
-  final _emailCtrl    = TextEditingController();
+  final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
-  final _confirmCtrl  = TextEditingController();
-  final _formKey      = GlobalKey<FormState>();
+  final _confirmCtrl = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   bool _obscure = true;
   bool _loading = false;
@@ -24,25 +26,40 @@ class _OwnerSignupScreenState extends State<OwnerSignupScreen> {
 
     setState(() => _loading = true);
 
-    String email = _emailCtrl.text.trim();
-    String password = _passwordCtrl.text.trim();
+    final name = _nameCtrl.text.trim();
+    final email = _emailCtrl.text.trim();
+    final password = _passwordCtrl.text.trim();
 
-    // ✅ حفظ الأكاونت
-    await OwnerLoginScreen.addOwner(
-      email: email,
-      password: password,
-    );
+    try {
+      final dio = DioFactory.getDio();
+      final response = await dio.post('/auth/register', data: {
+        'full_name': name,
+        'email': email,
+        'password': password,
+        'password_confirmation': _confirmCtrl.text.trim(),
+        'role': 'owner',
+      });
 
-    await Future.delayed(const Duration(milliseconds: 800));
+      final token = response.data['data']['token'];
+      await DioFactory.saveToken(token);
 
-    setState(() => _loading = false);
-
-    // ✅ بعد التسجيل يدخل على طول
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const OwnerScreen()),
-      (route) => false,
-    );
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => OwnerScreen()), // ❌ إزالة const
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      setState(() => _loading = false);
+      String message = 'Registration failed';
+      if (e is DioException && e.response?.data != null) {
+        message = e.response?.data['message'] ?? message;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
+      );
+    }
   }
 
   @override
@@ -62,77 +79,55 @@ class _OwnerSignupScreenState extends State<OwnerSignupScreen> {
         backgroundColor: const Color(0xFF0F1115),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new,
-              color: Colors.white, size: 18),
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 28, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 8),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 480),
               child: Form(
                 key: _formKey,
-                autovalidateMode:
-                    AutovalidateMode.onUserInteraction,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text('Create account',
-                        style: TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white)),
+                        style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: Colors.white)),
                     const SizedBox(height: 6),
-                    const Text(
-                        'Register as a sports venue owner',
-                        style: TextStyle(
-                            color: Color(0xFF8B949E),
-                            fontSize: 14)),
+                    const Text('Register as a sports venue owner',
+                        style: TextStyle(color: Color(0xFF8B949E), fontSize: 14)),
                     const SizedBox(height: 36),
 
                     const Text('FULL NAME',
-                        style: TextStyle(
-                            color: Color(0xFF8B949E),
-                            fontSize: 11)),
+                        style: TextStyle(color: Color(0xFF8B949E), fontSize: 11)),
                     const SizedBox(height: 8),
                     _buildField(
                       controller: _nameCtrl,
                       hint: 'Samer Ibrahim',
                       icon: Icons.person_outline,
-                      validator: (v) =>
-                          (v == null || v.isEmpty)
-                              ? 'Required'
-                              : null,
+                      validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
                     ),
 
                     const SizedBox(height: 20),
 
                     const Text('EMAIL',
-                        style: TextStyle(
-                            color: Color(0xFF8B949E),
-                            fontSize: 11)),
+                        style: TextStyle(color: Color(0xFF8B949E), fontSize: 11)),
                     const SizedBox(height: 8),
                     _buildField(
                       controller: _emailCtrl,
                       hint: 'you@email.com',
                       icon: Icons.email_outlined,
-                      validator: (v) =>
-                          (v == null || !v.contains('@'))
-                              ? 'Enter valid email'
-                              : null,
+                      validator: (v) => (v == null || !v.contains('@')) ? 'Enter valid email' : null,
                     ),
 
                     const SizedBox(height: 20),
 
                     const Text('PASSWORD',
-                        style: TextStyle(
-                            color: Color(0xFF8B949E),
-                            fontSize: 11)),
+                        style: TextStyle(color: Color(0xFF8B949E), fontSize: 11)),
                     const SizedBox(height: 8),
                     _buildField(
                       controller: _passwordCtrl,
@@ -140,26 +135,17 @@ class _OwnerSignupScreenState extends State<OwnerSignupScreen> {
                       icon: Icons.lock_outline,
                       obscure: _obscure,
                       suffix: IconButton(
-                        icon: Icon(
-                            _obscure
-                                ? Icons.visibility_off
-                                : Icons.visibility,
+                        icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility,
                             color: const Color(0xFF8B949E)),
-                        onPressed: () => setState(
-                            () => _obscure = !_obscure),
+                        onPressed: () => setState(() => _obscure = !_obscure),
                       ),
-                      validator: (v) =>
-                          (v == null || v.length < 6)
-                              ? 'Min 6 characters'
-                              : null,
+                      validator: (v) => (v == null || v.length < 6) ? 'Min 6 characters' : null,
                     ),
 
                     const SizedBox(height: 20),
 
                     const Text('CONFIRM PASSWORD',
-                        style: TextStyle(
-                            color: Color(0xFF8B949E),
-                            fontSize: 11)),
+                        style: TextStyle(color: Color(0xFF8B949E), fontSize: 11)),
                     const SizedBox(height: 8),
                     _buildField(
                       controller: _confirmCtrl,
@@ -167,10 +153,8 @@ class _OwnerSignupScreenState extends State<OwnerSignupScreen> {
                       icon: Icons.lock_outline,
                       obscure: true,
                       validator: (v) {
-                        if (v == null || v.isEmpty)
-                          return 'Required';
-                        if (v != _passwordCtrl.text)
-                          return 'Passwords do not match';
+                        if (v == null || v.isEmpty) return 'Required';
+                        if (v != _passwordCtrl.text) return 'Passwords do not match';
                         return null;
                       },
                     ),
@@ -181,18 +165,13 @@ class _OwnerSignupScreenState extends State<OwnerSignupScreen> {
                       width: double.infinity,
                       height: 52,
                       child: ElevatedButton(
-                        onPressed:
-                            _loading ? null : _register,
+                        onPressed: _loading ? null : _register,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              const Color(0xFF3D5AFE),
-                          shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(12)),
+                          backgroundColor: const Color(0xFF3D5AFE),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         child: _loading
-                            ? const CircularProgressIndicator(
-                                color: Colors.white)
+                            ? const CircularProgressIndicator(color: Colors.white)
                             : const Text('Create Account'),
                       ),
                     ),
@@ -200,19 +179,14 @@ class _OwnerSignupScreenState extends State<OwnerSignupScreen> {
                     const SizedBox(height: 24),
 
                     Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
-                            'Already have an account? ',
-                            style: TextStyle(
-                                color: Color(0xFF8B949E))),
+                        const Text('Already have an account? ',
+                            style: TextStyle(color: Color(0xFF8B949E))),
                         GestureDetector(
-                          onTap: () =>
-                              Navigator.pop(context),
+                          onTap: () => Navigator.pop(context),
                           child: const Text('Sign in',
-                              style: TextStyle(
-                                  color: Color(0xFF3D5AFE))),
+                              style: TextStyle(color: Color(0xFF3D5AFE))),
                         ),
                       ],
                     ),
@@ -241,13 +215,11 @@ class _OwnerSignupScreenState extends State<OwnerSignupScreen> {
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         hintText: hint,
-        prefixIcon:
-            Icon(icon, color: const Color(0xFF8B949E)),
+        prefixIcon: Icon(icon, color: const Color(0xFF8B949E)),
         suffixIcon: suffix,
         filled: true,
         fillColor: const Color(0xFF161B22),
-        border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

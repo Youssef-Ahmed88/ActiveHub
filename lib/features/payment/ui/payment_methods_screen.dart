@@ -4,6 +4,8 @@ import 'package:flutter_complete_project/features/payment/data/payment_method.da
 import '../logic/payment_cubit.dart';
 import 'package:flutter_complete_project/core/routing/routes.dart';
 import 'package:flutter_complete_project/core/theming/colors.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_complete_project/core/di/dependency_injection.dart';
 
 class PaymentMethodsScreen extends StatelessWidget {
   const PaymentMethodsScreen({super.key});
@@ -11,6 +13,7 @@ class PaymentMethodsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    print('💳 Payment args: $args');
 
     return Scaffold(
       appBar: AppBar(title: const Text("Payment Methods")),
@@ -70,13 +73,31 @@ class PaymentMethodsScreen extends StatelessWidget {
                         context.read<PaymentCubit>().removeMethod(method.id);
                       },
                     ),
-                   onTap: () {
-                     context.read<PaymentCubit>().confirmBooking({
-                    'booking_id': args?['booking_id'],      // ✅ أضيف ده
-                    'totalPrice': args?['totalPrice'] ?? 0,
-                      'paymentMethod': method.type,
-                      });
-                      },
+onTap: () async {
+  int? bookingId = args?['booking_id'];
+  double? totalPrice = args?['totalPrice'];
+
+  // لو مفيش booking_id، جيب آخر booking
+  if (bookingId == null) {
+    try {
+      final dio = getIt<Dio>();
+      final response = await dio.get('/my-bookings');
+      final List data = response.data is List ? response.data : response.data['data'];
+      if (data.isNotEmpty) {
+        bookingId = data.last['id'];
+        totalPrice = double.parse(data.last['total_price'].toString());
+      }
+    } catch (e) {
+      debugPrint('Error getting last booking: $e');
+    }
+  }
+
+  context.read<PaymentCubit>().confirmBooking({
+    'booking_id': bookingId,
+    'totalPrice': totalPrice ?? 0,
+    'paymentMethod': method.type,
+  });
+},
                   ),
                 );
               },

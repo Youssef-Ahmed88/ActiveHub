@@ -17,7 +17,7 @@ class _AdminScreenState extends State<AdminScreen>
   List<Map<String, dynamic>> venues = [];
   List<Map<String, dynamic>> bookings = [];
   List<Map<String, dynamic>> payments = [];
-  List<Map<String, dynamic>> owners = []; // Added: list of existing owners
+  List<Map<String, dynamic>> owners = [];
   bool isLoading = true;
 
   @override
@@ -32,7 +32,7 @@ class _AdminScreenState extends State<AdminScreen>
       _loadVenues(),
       _loadBookings(),
       _loadPayments(),
-      _loadOwners(), // Added: load owners list
+      _loadOwners(),
     ]);
     setState(() => isLoading = false);
   }
@@ -49,6 +49,7 @@ class _AdminScreenState extends State<AdminScreen>
           'sport': v['sport']?['name'] ?? '',
           'price': double.parse(v['price_per_hour'].toString()).toInt(),
           'available': v['is_available'] == 1,
+          'has_owner': v['owner_id'] != null, // ✅ إضافة
         }).toList();
       });
     } catch (e) {
@@ -95,11 +96,9 @@ class _AdminScreenState extends State<AdminScreen>
     }
   }
 
-  // New method: load existing owners (users with role = owner)
   Future<void> _loadOwners() async {
     try {
       final dio = getIt<Dio>();
-      // Adjust endpoint if needed – assuming /users?role=owner exists
       final response = await dio.get('/users?role=owner');
       final List data = response.data['data'] ?? response.data;
       setState(() {
@@ -111,7 +110,6 @@ class _AdminScreenState extends State<AdminScreen>
       });
     } catch (e) {
       debugPrint('Error loading owners: $e');
-      // If endpoint doesn't exist, keep empty list (user can still create new owner)
       setState(() => owners = []);
     }
   }
@@ -329,8 +327,7 @@ class _AdminScreenState extends State<AdminScreen>
   }
 
   Widget _buildPaymentsTab() {
-    final total = payments
-        .fold(0, (sum, p) => sum + (p['amount'] as int));
+    final total = payments.fold(0, (sum, p) => sum + (p['amount'] as int));
 
     return Column(
       children: [
@@ -478,16 +475,11 @@ class _AdminScreenState extends State<AdminScreen>
     }
   }
 
-  // ------------------------------------------
-  // MODIFIED: Add Venue Dialog with Owner options
-  // ------------------------------------------
   void _showAddVenueDialog() {
     final nameController = TextEditingController();
     final priceController = TextEditingController();
     String selectedSport = 'Football';
-
-    // Owner selection state
-    bool createNewOwner = true; // Default: create new owner
+    bool createNewOwner = true;
     int? selectedOwnerId;
     final newOwnerEmailCtrl = TextEditingController();
     final newOwnerNameCtrl = TextEditingController();
@@ -527,7 +519,7 @@ class _AdminScreenState extends State<AdminScreen>
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: selectedSport,
+                  initialValue: selectedSport,
                   dropdownColor: ColorsManager.cardBg,
                   style: const TextStyle(color: Colors.white),
                   decoration: const InputDecoration(
@@ -546,7 +538,6 @@ class _AdminScreenState extends State<AdminScreen>
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
-                // Toggle between existing and new owner
                 Row(
                   children: [
                     Expanded(
@@ -634,12 +625,12 @@ class _AdminScreenState extends State<AdminScreen>
                 ] else ...[
                   if (owners.isEmpty)
                     const Text(
-                      'No existing owners found. Please add owners first or create a new one.',
+                      'No existing owners found.',
                       style: TextStyle(color: Colors.red, fontSize: 12),
                     )
                   else
                     DropdownButtonFormField<int>(
-                      value: selectedOwnerId,
+                      initialValue: selectedOwnerId,
                       dropdownColor: ColorsManager.cardBg,
                       style: const TextStyle(color: Colors.white),
                       decoration: const InputDecoration(
@@ -649,13 +640,8 @@ class _AdminScreenState extends State<AdminScreen>
                       items: owners.map((owner) {
                         return DropdownMenuItem<int>(
                           value: owner['id'],
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(owner['name'], style: const TextStyle(color: Colors.white)),
-                              Text(owner['email'], style: const TextStyle(color: ColorsManager.mutedText, fontSize: 10)),
-                            ],
-                          ),
+                          child: Text(owner['name'],
+                              style: const TextStyle(color: Colors.white)),
                         );
                       }).toList(),
                       onChanged: (val) => setDialogState(() => selectedOwnerId = val),
@@ -674,27 +660,33 @@ class _AdminScreenState extends State<AdminScreen>
               onPressed: () async {
                 if (nameController.text.isEmpty || priceController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please fill venue name and price'), backgroundColor: Colors.red),
+                    const SnackBar(
+                        content: Text('Please fill venue name and price'),
+                        backgroundColor: Colors.red),
                   );
                   return;
                 }
-                // Validate owner data
                 if (createNewOwner) {
-                  if (newOwnerEmailCtrl.text.isEmpty || newOwnerNameCtrl.text.isEmpty || newOwnerPassCtrl.text.isEmpty) {
+                  if (newOwnerEmailCtrl.text.isEmpty ||
+                      newOwnerNameCtrl.text.isEmpty ||
+                      newOwnerPassCtrl.text.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please fill all owner fields'), backgroundColor: Colors.red),
+                      const SnackBar(
+                          content: Text('Please fill all owner fields'),
+                          backgroundColor: Colors.red),
                     );
                     return;
                   }
                 } else {
                   if (selectedOwnerId == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please select an existing owner'), backgroundColor: Colors.red),
+                      const SnackBar(
+                          content: Text('Please select an existing owner'),
+                          backgroundColor: Colors.red),
                     );
                     return;
                   }
                 }
-
                 try {
                   final dio = getIt<Dio>();
                   final Map<String, dynamic> data = {
@@ -714,13 +706,14 @@ class _AdminScreenState extends State<AdminScreen>
                   }
                   await dio.post('/courts', data: data);
                   await _loadVenues();
-                  // Reload owners in case a new one was created
                   await _loadOwners();
                   Navigator.pop(context);
                 } catch (e) {
                   debugPrint('Error adding venue: $e');
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                    SnackBar(
+                        content: Text('Error: $e'),
+                        backgroundColor: Colors.red),
                   );
                 }
               },
@@ -734,16 +727,16 @@ class _AdminScreenState extends State<AdminScreen>
     );
   }
 
-  // ------------------------------------------
-  // Edit Venue Dialog (unchanged)
-  // ------------------------------------------
   void _showEditVenueDialog(int index) {
     final venue = venues[index];
     final nameController = TextEditingController(text: venue['name']);
-    final priceController =
-        TextEditingController(text: venue['price'].toString());
+    final priceController = TextEditingController(text: venue['price'].toString());
     String selectedSport = venue['sport'];
     bool isAvailable = venue['available'];
+    bool hasOwner = venue['has_owner'] ?? false;
+    final ownerEmailCtrl = TextEditingController();
+    final ownerNameCtrl = TextEditingController();
+    final ownerPassCtrl = TextEditingController();
 
     showDialog(
       context: context,
@@ -755,56 +748,136 @@ class _AdminScreenState extends State<AdminScreen>
         ),
         title: const Text('Edit Venue', style: TextStyle(color: Colors.white)),
         content: StatefulBuilder(
-          builder: (context, setDialogState) => Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  labelText: 'Venue Name',
-                  labelStyle: TextStyle(color: ColorsManager.mutedText),
+          builder: (context, setDialogState) => SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelText: 'Venue Name',
+                    labelStyle: TextStyle(color: ColorsManager.mutedText),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: priceController,
-                style: const TextStyle(color: Colors.white),
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Price per hour (EGP)',
-                  labelStyle: TextStyle(color: ColorsManager.mutedText),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: priceController,
+                  style: const TextStyle(color: Colors.white),
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Price per hour (EGP)',
+                    labelStyle: TextStyle(color: ColorsManager.mutedText),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: selectedSport,
-                dropdownColor: ColorsManager.cardBg,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  labelText: 'Sport Type',
-                  labelStyle: TextStyle(color: ColorsManager.mutedText),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: selectedSport,
+                  dropdownColor: ColorsManager.cardBg,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelText: 'Sport Type',
+                    labelStyle: TextStyle(color: ColorsManager.mutedText),
+                  ),
+                  items: ['Football', 'Basketball', 'Padel']
+                      .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                      .toList(),
+                  onChanged: (val) => setDialogState(() => selectedSport = val!),
                 ),
-                items: ['Football', 'Basketball', 'Padel']
-                    .map((s) => DropdownMenuItem(value: s, child: Text(s)))
-                    .toList(),
-                onChanged: (val) => setDialogState(() => selectedSport = val!),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Available',
-                      style: TextStyle(color: Colors.white)),
-                  Switch(
-                    value: isAvailable,
-                    activeColor: ColorsManager.primaryBlue,
-                    onChanged: (val) =>
-                        setDialogState(() => isAvailable = val),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Available', style: TextStyle(color: Colors.white)),
+                    Switch(
+                      value: isAvailable,
+                      activeThumbColor: ColorsManager.primaryBlue,
+                      onChanged: (val) => setDialogState(() => isAvailable = val),
+                    ),
+                  ],
+                ),
+                if (!hasOwner) ...[
+                  const SizedBox(height: 16),
+                  const Divider(color: ColorsManager.borderColor),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.warning_amber, color: Colors.orange, size: 18),
+                            SizedBox(width: 8),
+                            Text(
+                              'No Owner — Add Owner Account',
+                              style: TextStyle(
+                                color: Colors.orange,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: ownerEmailCtrl,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: const InputDecoration(
+                            labelText: 'Owner Email *',
+                            labelStyle: TextStyle(color: ColorsManager.mutedText),
+                            prefixIcon: Icon(Icons.email, color: ColorsManager.mutedText),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: ownerNameCtrl,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: const InputDecoration(
+                            labelText: 'Owner Full Name *',
+                            labelStyle: TextStyle(color: ColorsManager.mutedText),
+                            prefixIcon: Icon(Icons.person, color: ColorsManager.mutedText),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: ownerPassCtrl,
+                          style: const TextStyle(color: Colors.white),
+                          obscureText: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Owner Password *',
+                            labelStyle: TextStyle(color: ColorsManager.mutedText),
+                            prefixIcon: Icon(Icons.lock, color: ColorsManager.mutedText),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ] else ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.green, size: 16),
+                        SizedBox(width: 8),
+                        Text('This venue has an owner',
+                            style: TextStyle(color: Colors.green, fontSize: 12)),
+                      ],
+                    ),
                   ),
                 ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         actions: [
@@ -817,17 +890,30 @@ class _AdminScreenState extends State<AdminScreen>
             onPressed: () async {
               try {
                 final dio = getIt<Dio>();
-                await dio.put('/courts/${venue['id']}', data: {
+                final Map<String, dynamic> data = {
                   'name': nameController.text,
-                  'sport_id': ['Football', 'Padel', 'Basketball']
-                          .indexOf(selectedSport) + 1,
+                  'sport_id': ['Football', 'Padel', 'Basketball'].indexOf(selectedSport) + 1,
                   'price_per_hour': int.tryParse(priceController.text) ?? 0,
                   'is_available': isAvailable ? 1 : 0,
-                });
+                };
+                if (!hasOwner &&
+                    ownerEmailCtrl.text.isNotEmpty &&
+                    ownerNameCtrl.text.isNotEmpty &&
+                    ownerPassCtrl.text.isNotEmpty) {
+                  data['owner_email'] = ownerEmailCtrl.text.trim();
+                  data['owner_name'] = ownerNameCtrl.text.trim();
+                  data['owner_password'] = ownerPassCtrl.text.trim();
+                }
+                await dio.put('/courts/${venue['id']}', data: data);
                 await _loadVenues();
                 Navigator.pop(context);
               } catch (e) {
                 debugPrint('Error editing venue: $e');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content: Text('Error: $e'),
+                      backgroundColor: Colors.red),
+                );
               }
             },
             style: ElevatedButton.styleFrom(

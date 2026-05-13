@@ -22,3 +22,6 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+build/ 
+.dart_tool/ 
+*.dart_tool 

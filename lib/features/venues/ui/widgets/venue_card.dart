@@ -33,7 +33,7 @@ class VenueCard extends StatelessWidget {
                     height: 160.h,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
+                    errorBuilder: (_, _, _) => Container(
                       height: 160.h,
                       color: ColorsManager.fieldBg,
                       child: Icon(Icons.image_not_supported,

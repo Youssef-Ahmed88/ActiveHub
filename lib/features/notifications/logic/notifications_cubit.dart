@@ -1,53 +1,73 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_complete_project/core/di/dependency_injection.dart';
-import '../data/notification.dart';
+import 'package:flutter_complete_project/features/notifications/data/notification.dart';
+import 'package:flutter_complete_project/features/notifications/data/notification_service.dart';
 
-abstract class NotificationsState {}
-class NotificationsInitial extends NotificationsState {}
-class NotificationsLoading extends NotificationsState {}
-class NotificationsLoaded extends NotificationsState {
-  final List<AppNotification> notifications;
-  NotificationsLoaded(this.notifications);
-}
-class NotificationsError extends NotificationsState {
-  final String message;
-  NotificationsError(this.message);
-}
+part 'notifications_state.dart';
 
 class NotificationsCubit extends Cubit<NotificationsState> {
-  NotificationsCubit() : super(NotificationsInitial());
+  final NotificationService _notificationService;
+
+  NotificationsCubit(this._notificationService) : super(NotificationsInitial());
+
+  List<AppNotification> notifications = [];
 
   Future<void> loadNotifications() async {
     emit(NotificationsLoading());
     try {
-      final dio = getIt<Dio>();
-      final response = await dio.get('/notifications');
-      final List data = response.data['data'];
-      final notifications = data.map((n) => AppNotification.fromJson(n)).toList();
-      emit(NotificationsLoaded(notifications));
+      notifications = await _notificationService.getNotifications();
+      emit(NotificationsLoaded(List.from(notifications)));
     } catch (e) {
-      emit(NotificationsError("Failed to load notifications: $e"));
+      emit(NotificationsError(e.toString()));
     }
   }
 
   Future<void> markAsRead(int id) async {
     try {
-      final dio = getIt<Dio>();
-      await dio.patch('/notifications/$id/read');
-      loadNotifications();
+      await _notificationService.markAsRead(id);
+      notifications = notifications
+          .map(
+            (n) => n.id == id
+                ? AppNotification(
+                    id: n.id,
+                    message: n.message,
+                    isRead: true,
+                    createdAt: n.createdAt,
+                  )
+                : n,
+          )
+          .toList();
+      emit(NotificationsLoaded(List.from(notifications)));
     } catch (e) {
-      emit(NotificationsError("Failed to mark as read: $e"));
+      emit(NotificationsError(e.toString()));
+    }
+  }
+
+  Future<void> markAllAsRead() async {
+    try {
+      await _notificationService.markAllAsRead();
+      notifications = notifications
+          .map(
+            (n) => AppNotification(
+              id: n.id,
+              message: n.message,
+              isRead: true,
+              createdAt: n.createdAt,
+            ),
+          )
+          .toList();
+      emit(NotificationsLoaded(List.from(notifications)));
+    } catch (e) {
+      emit(NotificationsError(e.toString()));
     }
   }
 
   Future<void> deleteNotification(int id) async {
     try {
-      final dio = getIt<Dio>();
-      await dio.delete('/notifications/$id');
-      loadNotifications();
+      await _notificationService.deleteNotification(id);
+      notifications = notifications.where((n) => n.id != id).toList();
+      emit(NotificationsLoaded(List.from(notifications)));
     } catch (e) {
-      emit(NotificationsError("Failed to delete notification: $e"));
+      emit(NotificationsError(e.toString()));
     }
   }
 }

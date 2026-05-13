@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_complete_project/features/venues/data/models/venue.dart';
 import 'package:flutter_complete_project/features/booking/logic/booking_cubit.dart';
 import 'package:flutter_complete_project/features/booking/data/models/time_slot_model.dart';
-import 'package:flutter_complete_project/features/booking/data/models/booking_model.dart';
 import '../../../core/theming/colors.dart';
 import '../../../core/routing/routes.dart';
 
@@ -27,19 +26,22 @@ class _BookingScreenState extends State<BookingScreen> {
   @override
   void initState() {
     super.initState();
-    _bookingCubit = BookingCubit();
+    _bookingCubit = context.read<BookingCubit>();
     _loadSlots();
   }
 
-  void _loadSlots() {
-    if (widget.venue.id != null) {
-      _bookingCubit.getAvailableSlots(widget.venue.id!);
-    }
+  // ✅ تنسيق التاريخ إلى YYYY-MM-DD
+  String _formatDate(DateTime date) {
+    return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
   }
+
+  void _loadSlots() {
+    final formattedDate = _formatDate(selectedDate);
+    _bookingCubit.getAvailableSlots(widget.venue.id, formattedDate);
+    }
 
   @override
   void dispose() {
-    _bookingCubit.close();
     super.dispose();
   }
 
@@ -54,7 +56,7 @@ class _BookingScreenState extends State<BookingScreen> {
       child: BlocListener<BookingCubit, BookingState>(
         listener: (context, state) {
           if (state is BookingSuccess) {
-            // Navigate to confirmation screen on success
+            print('🎯 booking_id = ${state.booking.id}');
             Navigator.pushNamed(
               context,
               Routes.bookingConfirmationScreen,
@@ -139,7 +141,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Date picker (unchanged)
+                // Date picker
                 const Text('Select Date',
                     style: TextStyle(
                         color: Colors.white,
@@ -166,7 +168,7 @@ class _BookingScreenState extends State<BookingScreen> {
                         selectedDate = picked;
                         selectedSlot = null;
                       });
-                      _loadSlots();
+                      _loadSlots(); // ✅ إعادة تحميل الأوقات للتاريخ الجديد
                     }
                   },
                   child: Container(
@@ -191,7 +193,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Time slots (unchanged)
+                // Time slots
                 const Text('Select Time Slot',
                     style: TextStyle(
                         color: Colors.white,
@@ -287,7 +289,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Duration slider (unchanged)
+                // Duration slider
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -319,7 +321,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Price summary (unchanged)
+                // Price summary
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -357,9 +359,8 @@ class _BookingScreenState extends State<BookingScreen> {
                       setState(() {
                         _isBooking = true;
                       });
-                      // Use the cubit's createBooking method (requires courtId and timeSlotId)
                       context.read<BookingCubit>().createBooking(
-                            courtId: widget.venue.id!,
+                            courtId: widget.venue.id,
                             timeSlotId: selectedSlot!.id,
                           );
                     },

@@ -116,7 +116,7 @@ class SportDetailsScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 3),
                         Text(
-                          '${venue.rating?.toStringAsFixed(1) ?? '0.0'}',
+                          venue.rating?.toStringAsFixed(1) ?? '0.0',
                           style: const TextStyle(
                             color: Colors.amber,
                             fontSize: 12,

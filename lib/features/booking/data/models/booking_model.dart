@@ -1,21 +1,21 @@
 class BookingModel {
   final int id;
   final int courtId;
-  final int timeSlotId;          // ✅ New field: time_slot_id from backend
+  final int timeSlotId;
   final String startTime;
   final String endTime;
-  final String totalPrice;
-  final String status;
+  final double totalPrice;
+  final String status;           // ✅ أضفنا هذا السطر (الحقل)
   final CourtModel? court;
 
   BookingModel({
     required this.id,
     required this.courtId,
-    required this.timeSlotId,    // ✅ required
+    required this.timeSlotId,
     required this.startTime,
     required this.endTime,
     required this.totalPrice,
-    required this.status,
+    required this.status,        // ✅ أضفنا هذا السطر
     this.court,
   });
 
@@ -23,16 +23,15 @@ class BookingModel {
     return BookingModel(
       id: json['id'],
       courtId: json['court_id'],
-      timeSlotId: json['time_slot_id'] ?? 0,   // ✅ added with fallback
+      timeSlotId: json['time_slot_id'] ?? 0,
       startTime: json['start_time'],
       endTime: json['end_time'],
-      totalPrice: json['total_price'],
-      status: json['status'],
+      totalPrice: double.parse(json['total_price'].toString()),
+      status: json['status'] ?? 'pending',   // ✅ أضفنا هذا السطر
       court: json['court'] != null ? CourtModel.fromJson(json['court']) : null,
     );
   }
 
-  // Optional: toJson if you ever need to send booking data back (e.g., for updates)
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -41,7 +40,7 @@ class BookingModel {
       'start_time': startTime,
       'end_time': endTime,
       'total_price': totalPrice,
-      'status': status,
+      'status': status,          // ✅ أضفنا هذا السطر
       'court': court?.toJson(),
     };
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_complete_project/core/helpers/spacing.dart';
+import 'package:flutter_complete_project/core/routing/routes.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/theming/colors.dart';
 import '../../../../core/theming/styles.dart';
@@ -11,24 +12,17 @@ class DoctorsBlueContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(
-        horizontal: 20.w,
-        vertical: 16.h,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20.r),
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF1565C0),
-            Color(0xFF0D47A1),
-          ],
+          colors: [Color(0xFF1565C0), Color(0xFF0D47A1)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
       ),
       child: Row(
         children: [
-          // Left side text and button
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,7 +34,9 @@ class DoctorsBlueContainer extends StatelessWidget {
                 ),
                 verticalSpace(12),
                 ElevatedButton(
-                  onPressed: () {},
+                  // ✅ هنا الإضافة
+                  onPressed: () =>
+                      Navigator.pushNamed(context, Routes.nearbyScreen),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
@@ -60,18 +56,13 @@ class DoctorsBlueContainer extends StatelessWidget {
                         size: 14,
                       ),
                       SizedBox(width: 4.w),
-                      Text(
-                        'Find Nearby',
-                        style: TextStyles.font12BlueRegular,
-                      ),
+                      Text('Find Nearby', style: TextStyles.font12BlueRegular),
                     ],
                   ),
                 ),
               ],
             ),
           ),
-
-          // Right side sport icons
           Column(
             children: [
               _sportIcon(Icons.sports_soccer, 38),
@@ -94,11 +85,7 @@ class DoctorsBlueContainer extends StatelessWidget {
         shape: BoxShape.circle,
         color: Colors.white.withOpacity(0.15),
       ),
-      child: Icon(
-        icon,
-        color: Colors.white,
-        size: size * 0.5,
-      ),
+      child: Icon(icon, color: Colors.white, size: size * 0.5),
     );
   }
 }

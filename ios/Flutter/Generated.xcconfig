@@ -1,6 +1,6 @@
 // This is a generated file; do not edit or check into version control.
-FLUTTER_ROOT=C:\flutter
-FLUTTER_APPLICATION_PATH=D:\Graduation_project\ActiveHub
+FLUTTER_ROOT=C:\src\flutter
+FLUTTER_APPLICATION_PATH=C:\xampp\htdocs\ActiveHub_frontend_2\ActiveHub_Frontend\Graduation_project\ActiveHub
 COCOAPODS_PARALLEL_CODE_SIGN=true
 FLUTTER_TARGET=lib\main.dart
 FLUTTER_BUILD_DIR=build

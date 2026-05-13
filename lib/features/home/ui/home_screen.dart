@@ -6,8 +6,7 @@ import 'package:flutter_complete_project/features/venues/data/venue_api.dart';
 import 'package:flutter_complete_project/features/sports/data/models/sport.dart';
 import 'package:flutter_complete_project/features/sports/data/sport_api.dart';
 import 'package:flutter_complete_project/features/sports/data/repos/sport_repository.dart';
-import 'package:dio/dio.dart';
-import 'package:flutter_complete_project/core/networking/dio_factory.dart'; // ✅ استخدمنا DioFactory بدلاً من getIt
+import 'package:flutter_complete_project/core/networking/dio_factory.dart';
 import 'widgets/home_banner.dart';
 import 'widgets/sports_see_all.dart';
 import 'widgets/home_top_bar.dart';
@@ -35,7 +34,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadData() async {
     try {
-      // ✅ استخدام DioFactory بدلاً من getIt<Dio>()
       final dio = DioFactory.getDio();
       final venueRepo = VenueRepository(VenueApi(dio));
       final sportRepo = SportRepository(SportApi(dio));
@@ -43,7 +41,6 @@ class _HomeScreenState extends State<HomeScreen> {
       final venuesData = await venueRepo.getVenues();
       final sportsData = await sportRepo.getSports();
 
-      // ✅ طباعة عدد الرياضات للتأكد (تظهر في Terminal)
       print('Number of sports loaded: ${sportsData.length}');
 
       setState(() {
@@ -52,7 +49,6 @@ class _HomeScreenState extends State<HomeScreen> {
         isLoading = false;
       });
     } catch (e) {
-      // ✅ طباعة الخطأ التفصيلي
       print('Error loading home data: $e');
       setState(() => isLoading = false);
     }
@@ -81,10 +77,16 @@ class _HomeScreenState extends State<HomeScreen> {
               decoration: BoxDecoration(
                 color: ColorsManager.cardBg,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: ColorsManager.borderColor, width: 0.5),
+                border: Border.all(
+                  color: ColorsManager.borderColor,
+                  width: 0.5,
+                ),
               ),
-              child: const Icon(Icons.person_outline,
-                  color: ColorsManager.lightBlue, size: 20),
+              child: const Icon(
+                Icons.person_outline,
+                color: ColorsManager.lightBlue,
+                size: 20,
+              ),
             ),
           ),
         ],
@@ -100,6 +102,65 @@ class _HomeScreenState extends State<HomeScreen> {
                     const HomeTopBar(),
                     verticalSpace(20),
                     const DoctorsBlueContainer(),
+                    verticalSpace(20),
+
+                    // ✅ Find Nearby Courts Button
+                    GestureDetector(
+                      onTap: () =>
+                          Navigator.pushNamed(context, Routes.nearbyScreen),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                          horizontal: 16,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(
+                              Icons.location_on,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                            SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Find Nearby Courts',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  'Discover sports courts near you',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Spacer(),
+                            Icon(
+                              Icons.arrow_forward_ios,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
                     verticalSpace(28),
                     const DoctorsSpecialitySeeAll(),
                     verticalSpace(18),
@@ -124,13 +185,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                 right: sport == sports.last ? 0 : 12,
                               ),
                               padding: const EdgeInsets.symmetric(
-                                  vertical: 16, horizontal: 8),
+                                vertical: 16,
+                                horizontal: 8,
+                              ),
                               decoration: BoxDecoration(
                                 color: ColorsManager.cardBg,
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                    color: ColorsManager.borderColor,
-                                    width: 0.5),
+                                  color: ColorsManager.borderColor,
+                                  width: 0.5,
+                                ),
                               ),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
@@ -139,7 +203,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     width: 52,
                                     height: 52,
                                     decoration: BoxDecoration(
-                                      color: ColorsManager.primaryBlue.withValues(alpha: 0.15),
+                                      color: ColorsManager.primaryBlue
+                                          .withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(14),
                                     ),
                                     child: Center(

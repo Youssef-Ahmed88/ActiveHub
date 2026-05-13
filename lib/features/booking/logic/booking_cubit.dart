@@ -52,18 +52,18 @@ class BookingCubit extends Cubit<BookingState> {
     }
   }
 
-  Future<void> getAvailableSlots(int courtId) async {
-    emit(BookingLoading());
-    try {
-      final apiService = getIt<ApiService>();
-      final response = await apiService.getAvailableSlots(courtId);
-      final List<dynamic> data = response as List<dynamic>;
-      final slots = data.map((e) => TimeSlotModel.fromJson(e)).toList();
-      emit(SlotsLoaded(slots));
-    } catch (e) {
-      emit(BookingError("Failed to load slots: $e"));
-    }
+  Future<void> getAvailableSlots(int courtId, String date) async {
+  emit(BookingLoading());
+  try {
+    final apiService = getIt<ApiService>();
+    final response = await apiService.getAvailableSlots(courtId, date);
+    final List<dynamic> data = response as List<dynamic>;
+    final slots = data.map((e) => TimeSlotModel.fromJson(e)).toList();
+    emit(SlotsLoaded(slots));
+  } catch (e) {
+    emit(BookingError("Failed to load slots: $e"));
   }
+}
 
   // New: create booking using time_slot_id
   Future<void> createBooking({

@@ -1,7 +1,7 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=C:\Users\ELAGOZ\OneDrive\Desktop\MY PROJECT\flutter"
-export "FLUTTER_APPLICATION_PATH=D:\Graduation_project\ActiveHub\test_app\test_web"
+export "FLUTTER_ROOT=C:\Flutter\flutter"
+export "FLUTTER_APPLICATION_PATH=C:\xampp\htdocs\ActiveHub-frontend\ActiveHub_Frontend\Graduation_project\ActiveHub\test_app\test_web"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_BUILD_DIR=build"
 export "FLUTTER_BUILD_NAME=1.0.0"

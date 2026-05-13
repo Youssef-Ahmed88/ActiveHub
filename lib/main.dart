@@ -1,77 +1,130 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:app_links/app_links.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final AppLinks _appLinks = AppLinks();
+  StreamSubscription<Uri>? _sub;
+
+  @override
+  void initState() {
+    super.initState();
+
+    initDeepLinks();
+  }
+
+  Future<void> initDeepLinks() async {
+    // لما التطبيق يكون مقفول
+    final Uri? initialUri = await _appLinks.getInitialLink();
+
+    if (initialUri != null) {
+      handleDeepLink(initialUri);
+    }
+
+    // لما التطبيق يكون مفتوح
+    _sub = _appLinks.uriLinkStream.listen((Uri uri) {
+      handleDeepLink(uri);
+    });
+  }
+
+  void handleDeepLink(Uri uri) {
+    debugPrint("Deep Link Received: $uri");
+
+    if (uri.host == 'reset-password') {
+      final token = uri.queryParameters['token'] ?? '';
+      final email = uri.queryParameters['email'] ?? '';
+
+      navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (_) => ResetPasswordScreen(token: token, email: email),
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-        ),
-      ),
-      home: const MyHomePage(
-        title: 'Flutter Demo Home Page',
+      debugShowCheckedModeBanner: false,
+      navigatorKey: navigatorKey,
+
+      home: const HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("ActiveHub")),
+
+      body: const Center(
+        child: Text("Home Screen", style: TextStyle(fontSize: 24)),
       ),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({
+class ResetPasswordScreen extends StatelessWidget {
+  final String token;
+  final String email;
+
+  const ResetPasswordScreen({
     super.key,
-    required this.title,
+    required this.token,
+    required this.email,
   });
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor:
-            Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Center(
+      appBar: AppBar(title: const Text("Reset Password")),
+
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 20),
+
             const Text(
-              'You have pushed the button this many times:',
+              "Reset Password Screen",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context)
-                  .textTheme
-                  .headlineMedium,
-            ),
+
+            const SizedBox(height: 30),
+
+            Text("Email: $email", style: const TextStyle(fontSize: 18)),
+
+            const SizedBox(height: 20),
+
+            Text("Token: $token", style: const TextStyle(fontSize: 16)),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }

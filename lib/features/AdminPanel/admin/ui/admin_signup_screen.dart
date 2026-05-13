@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_complete_project/core/routing/routes.dart';
 import 'package:flutter_complete_project/core/theming/colors.dart';
-import 'package:flutter_complete_project/features/login/logic/cubit/login_cubit.dart';
 import 'admin_login_screen.dart';
 
 class AdminSignupScreen extends StatefulWidget {
@@ -20,7 +19,7 @@ class _AdminSignupScreenState extends State<AdminSignupScreen> {
 
   bool _isLoading = false;
   bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
+  final bool _obscureConfirmPassword = true;
   bool _obscureAdminCode = true;
 
   void _signup() async {

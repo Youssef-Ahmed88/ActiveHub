@@ -12,6 +12,7 @@ import '../../features/login/logic/cubit/login_cubit.dart';
 import '../../features/sign_up/data/repos/sign_up_repo.dart';
 import '../../features/sign_up/logic/sign_up_cubit.dart';
 import '../../features/venues/logic/venues_cubit.dart';
+import 'package:flutter_complete_project/features/chatbot/logic/chatbot_cubit.dart';
 
 final getIt = GetIt.instance;
 
@@ -41,4 +42,5 @@ Future<void> setupGetIt() async {
 
   // Payment
   getIt.registerLazySingleton<Dio>(() => DioFactory.getDio());
+  getIt.registerFactory<ChatbotCubit>(() => ChatbotCubit());
 }

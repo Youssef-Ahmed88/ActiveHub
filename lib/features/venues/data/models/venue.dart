@@ -23,7 +23,7 @@ class Venue {
     this.isAvailable,
   });
 
-  get reviews => null;
+  Null get reviews => null;
 
   factory Venue.fromJson(Map<String, dynamic> json) {
     return Venue(

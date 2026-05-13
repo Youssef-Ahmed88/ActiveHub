@@ -522,7 +522,7 @@ class _OwnerScreenState extends State<OwnerScreen> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: bookings.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFF30363D)),
+                  separatorBuilder: (_, _) => const Divider(height: 1, color: Color(0xFF30363D)),
                   itemBuilder: (context, index) => BookingTile(booking: bookings[index]),
                 ),
         ],
@@ -578,7 +578,7 @@ class _OwnerScreenState extends State<OwnerScreen> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: payments.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFF30363D)),
+                  separatorBuilder: (_, _) => const Divider(height: 1, color: Color(0xFF30363D)),
                   itemBuilder: (context, i) {
                     final p = payments[i];
                     const statusColor = Color(0xFF00E676);
