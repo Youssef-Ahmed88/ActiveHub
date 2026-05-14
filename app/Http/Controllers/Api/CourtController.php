@@ -1,45 +1,47 @@
 <?php
-
+ 
 namespace App\Http\Controllers\Api;
-
+ 
 use App\Http\Controllers\Controller;
 use App\Helpers\ApiResponse;
 use App\Models\Court;
 use App\Models\User;
+use App\Models\TimeSlot;
 use App\Services\CourtService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-
+ 
 class CourtController extends Controller
 {
     public function __construct(private CourtService $courtService)
     {
     }
-
+ 
     public function index(): JsonResponse
     {
         $courts = $this->courtService->getAll();
         return ApiResponse::success(message: 'Courts retrieved successfully', data: $courts);
     }
-
+ 
     public function ownerIndex(Request $request): JsonResponse
     {
         $courts = $this->courtService->getByOwner($request->user()->id);
         return ApiResponse::success(message: 'Courts retrieved successfully', data: $courts);
     }
-
+ 
     public function show(Court $court): JsonResponse
     {
         $court->load('sport');
         return ApiResponse::success(message: 'Court retrieved successfully', data: $court);
     }
-
+ 
     public function store(Request $request): JsonResponse
     {
         if (!$request->user()->isAdmin()) {
             return response()->json(['error' => 'Not allowed'], 403);
         }
-
+ 
         $validated = $request->validate([
             'name'           => 'required|string|max:255',
             'sport_id'       => 'required|exists:sports,id',
@@ -52,9 +54,9 @@ class CourtController extends Controller
             'owner_name'     => 'required_with:owner_email|string|max:255',
             'owner_password' => 'required_with:owner_email|string|min:6',
         ]);
-
+ 
         $ownerId = $validated['owner_id'] ?? null;
-
+ 
         if (!$ownerId && isset($validated['owner_email'])) {
             $owner = User::create([
                 'full_name' => $validated['owner_name'],
@@ -64,21 +66,35 @@ class CourtController extends Controller
             ]);
             $ownerId = $owner->id;
         }
-
+ 
         if (!$ownerId) {
             return response()->json(['error' => 'You must provide either owner_id or owner_email+owner_name+owner_password'], 422);
         }
-
+ 
         $courtData = array_merge($validated, ['owner_id' => $ownerId]);
         $court = $this->courtService->create($courtData);
-
+ 
+        // Auto-generate time slots for next 30 days (8AM - 10PM)
+        for ($i = 0; $i < 30; $i++) {
+            $date = Carbon::today()->addDays($i)->format('Y-m-d');
+            for ($hour = 8; $hour < 22; $hour++) {
+                TimeSlot::create([
+                    'court_id'     => $court->id,
+                    'slot_date'    => $date,
+                    'start_time'   => sprintf('%02d:00:00', $hour),
+                    'end_time'     => sprintf('%02d:00:00', $hour + 1),
+                    'is_available' => true,
+                ]);
+            }
+        }
+ 
         return ApiResponse::success(
             message: isset($owner) ? 'Court created and owner account created' : 'Court created successfully',
             data: $court,
             statusCode: 201
         );
     }
-
+ 
     public function update(Request $request, Court $court): JsonResponse
     {
         $validated = $request->validate([
@@ -94,7 +110,7 @@ class CourtController extends Controller
             'owner_name'     => 'required_with:owner_email|string|max:255',
             'owner_password' => 'required_with:owner_email|string|min:6',
         ]);
-
+ 
         if (!$court->owner_id && isset($validated['owner_email'])) {
             $owner = User::create([
                 'full_name' => $validated['owner_name'],
@@ -104,12 +120,12 @@ class CourtController extends Controller
             ]);
             $validated['owner_id'] = $owner->id;
         }
-
+ 
         $court = $this->courtService->update($court, $validated);
-
+ 
         return ApiResponse::success(message: 'Court updated successfully', data: $court);
     }
-
+ 
     public function destroy(Court $court): JsonResponse
     {
         $this->courtService->delete($court);

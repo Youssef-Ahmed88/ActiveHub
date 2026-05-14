@@ -1,30 +1,27 @@
 <?php
-
 namespace App\Models;
-
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
-
-protected $fillable = [
-    'full_name',
-    'email',
-    'password',
-    'role',
-];
-
+ 
+    protected $fillable = [
+        'full_name',
+        'email',
+        'password',
+        'role',
+    ];
+ 
     protected $hidden = [
         'password',
         'remember_token',
     ];
-
+ 
     protected function casts(): array
     {
         return [
@@ -32,19 +29,33 @@ protected $fillable = [
             'password'          => 'hashed',
         ];
     }
-
+ 
+    // ─── Role Helpers ───────────────────────────────────────────
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
     }
-
+ 
     public function isPlayer(): bool
     {
         return $this->role === 'player';
     }
-
+ 
     public function isStaff(): bool
     {
         return $this->role === 'staff';
+    }
+ 
+    // ✅ جديد
+    public function isOwner(): bool
+    {
+        return $this->role === 'owner';
+    }
+ 
+    // ─── Relationships ───────────────────────────────────────────
+    // ✅ جديد — الـ courts اللي الـ owner مسؤول عنها
+    public function courts()
+    {
+        return $this->hasMany(Court::class, 'owner_id');
     }
 }
