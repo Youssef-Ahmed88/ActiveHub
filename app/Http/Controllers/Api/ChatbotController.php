@@ -22,7 +22,7 @@ class ChatbotController extends Controller
 
         $userMessage = $request->message;
 
-        // ✅ تقليل كمية البيانات المرسلة لتجنب تجاوز حد التوكنات
+        //get real data from DB to feed the LLM for accurate responses(with limit to avoid too much data)
         $sports = Sport::all(['id', 'name'])->toArray();
         $courts = Court::limit(10)->get(['id', 'name', 'sport_id', 'price_per_hour', 'address'])->toArray(); // آخر 10 ملاعب فقط
         $slots  = TimeSlot::where('is_available', true)->limit(20)->get(['court_id', 'slot_date', 'start_time', 'end_time'])->toArray(); // آخر 20 موعد فقط
