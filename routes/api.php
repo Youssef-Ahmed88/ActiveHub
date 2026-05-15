@@ -51,8 +51,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
     Route::delete('/notifications/{notification}',     [NotificationController::class, 'destroy']);
  
+Route::middleware(['auth:sanctum', 'throttle:10,1'])->group(function () {
     Route::post('/chatbot', [ChatbotController::class, 'chat']);
- 
+}); 
     Route::middleware('role:owner')->group(function () {
         Route::get('/owner/courts',   [CourtController::class, 'ownerIndex']);
         Route::get('/owner/bookings', [BookingController::class, 'ownerBookings']);

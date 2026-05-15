@@ -14,6 +14,27 @@ use Illuminate\Support\Facades\Log;
 
 class ChatbotController extends Controller
 {
+    // أنماط البيانات الحساسة التي يجب حظرها
+    private array $sensitivePatterns = [
+        '/\b\d{16}\b/',                    // أرقام بطاقات الائتمان
+        '/\b\d{4}[\s-]\d{4}[\s-]\d{4}[\s-]\d{4}\b/', // بطاقة بصيغة أخرى
+        '/\bcvv\b|\bcvc\b/i',              // CVV/CVC
+        '/\bpassword\b|\bكلمة المرور\b/i', // كلمات المرور
+        '/\bpin\b|\bرقم سري\b/i',          // PIN
+        '/\b\d{3}\b.*\b(cvv|cvc)\b/i',    // رقم CVV
+    ];
+
+    // الأسئلة التي تحاول استخراج بيانات مستخدمين آخرين
+    private array $privacyViolationPatterns = [
+        '/بيانات.*مستخدم/i',
+        '/معلومات.*حساب.*آخر/i',
+        '/credit.*card.*user/i',
+        '/show.*user.*data/i',
+        '/get.*user.*password/i',
+        '/بطاقة.*شخص/i',
+        '/حساب.*شخص.*آخر/i',
+    ];
+
     public function chat(Request $request)
     {
         $request->validate([
@@ -22,16 +43,56 @@ class ChatbotController extends Controller
 
         $userMessage = $request->message;
 
-        //get real data from DB to feed the LLM for accurate responses(with limit to avoid too much data)
+        // 1. فحص البيانات الحساسة في الرسالة
+        foreach ($this->sensitivePatterns as $pattern) {
+            if (preg_match($pattern, $userMessage)) {
+                Log::warning('Sensitive data attempt in chatbot', [
+                    'user_id' => Auth::id(),
+                    'message_length' => strlen($userMessage),
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لا ترسل بيانات حساسة مثل أرقام البطاقات أو كلمات المرور. بياناتك الشخصية يجب أن تظل سرية.',
+                    'data'    => null,
+                ], 400);
+            }
+        }
+
+        // 2. فحص محاولات الوصول لبيانات مستخدمين آخرين
+        foreach ($this->privacyViolationPatterns as $pattern) {
+            if (preg_match($pattern, $userMessage)) {
+                Log::warning('Privacy violation attempt in chatbot', [
+                    'user_id' => Auth::id(),
+                    'pattern_matched' => $pattern,
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لا يمكنك الوصول إلى بيانات مستخدمين آخرين. كل مستخدم يرى بياناته فقط.',
+                    'data'    => null,
+                ], 403);
+            }
+        }
+
+        // 3. فحص طول الرسالة المشبوهة
+        if (strlen($userMessage) > 300) {
+            Log::warning('Suspiciously long chatbot message', [
+                'user_id' => Auth::id(),
+                'length'  => strlen($userMessage),
+            ]);
+        }
+
+        // جلب البيانات الحقيقية من DB
         $sports = Sport::all(['id', 'name'])->toArray();
-        $courts = Court::limit(10)->get(['id', 'name', 'sport_id', 'price_per_hour', 'address'])->toArray(); // آخر 10 ملاعب فقط
-        $slots  = TimeSlot::where('is_available', true)->limit(20)->get(['court_id', 'slot_date', 'start_time', 'end_time'])->toArray(); // آخر 20 موعد فقط
+        $courts = Court::limit(10)->get(['id', 'name', 'sport_id', 'price_per_hour', 'address'])->toArray();
+        $slots  = TimeSlot::where('is_available', true)->limit(20)->get(['court_id', 'slot_date', 'start_time', 'end_time'])->toArray();
 
         $sportsText = collect($sports)->map(fn($s) => $s['name'])->join(', ');
         $courtsText = collect($courts)->map(fn($c) =>
             "- اسم الملعب: {$c['name']} | السعر: {$c['price_per_hour']} جنيه/ساعة | العنوان: {$c['address']}"
         )->join("\n");
-        $slotsText  = collect($slots)->map(fn($s) =>
+        $slotsText = collect($slots)->map(fn($s) =>
             "ملعب رقم {$s['court_id']}: {$s['slot_date']} من {$s['start_time']} لـ {$s['end_time']}"
         )->join("\n");
 
@@ -40,6 +101,12 @@ class ChatbotController extends Controller
         يجب أن ترد دائماً باللغة العربية الفصحى فقط.
         لا تخترع أي معلومات - استخدم فقط البيانات المتاحة أدناه.
         إذا كانت المعلومات موجودة في البيانات أدناه، يجب أن تذكرها.
+
+        قواعد الخصوصية والأمان (مهم جداً):
+        - لا تشارك أي بيانات شخصية لأي مستخدم مع مستخدم آخر
+        - لا تذكر أي معلومات عن بطاقات الائتمان أو كلمات المرور
+        - إذا سأل المستخدم عن بيانات شخصية لمستخدم آخر، ارفض بشكل قاطع
+        - أنت تعمل فقط على بيانات الملاعب والحجوزات العامة
 
         الرياضات المتاحة: {$sportsText}
 
@@ -57,6 +124,7 @@ class ChatbotController extends Controller
         - البيانات المذكورة أعلاه هي المصدر الوحيد للمعلومات
         - لو المعلومة موجودة في البيانات، اذكرها
         - كن مختصراً ومفيداً (لا تزيد ردك عن 3 جمل)
+        - لا تشارك بيانات شخصية أو مالية لأي مستخدم
         ";
 
         try {
@@ -81,7 +149,7 @@ class ChatbotController extends Controller
             $botReply = 'حدث خطأ في الاتصال بالمساعد الذكي. الرجاء المحاولة لاحقاً.';
         }
 
-        // تسجيل المحادثة (حتى لو فشل الـ API)
+        // تسجيل المحادثة
         ChatbotLog::create([
             'user_id'  => Auth::id(),
             'query'    => $userMessage,
