@@ -8,6 +8,10 @@ import 'package:flutter_complete_project/features/sports/data/sport_api.dart';
 import 'package:flutter_complete_project/features/sports/data/repos/sport_repository.dart';
 import 'package:flutter_complete_project/core/networking/dio_factory.dart';
 import 'widgets/home_banner.dart';
+<<<<<<< HEAD
+=======
+import 'widgets/sports_see_all.dart';
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
 import 'widgets/home_top_bar.dart';
 import '../../../core/theming/colors.dart';
 import '../../sports/ui/sport_details_screen.dart';
@@ -36,18 +40,32 @@ class _HomeScreenState extends State<HomeScreen> {
       final dio = DioFactory.getDio();
       final venueRepo = VenueRepository(VenueApi(dio));
       final sportRepo = SportRepository(SportApi(dio));
+<<<<<<< HEAD
       final venuesData = await venueRepo.getVenues();
       final sportsData = await sportRepo.getSports();
+=======
+
+      final venuesData = await venueRepo.getVenues();
+      final sportsData = await sportRepo.getSports();
+
+      print('Number of sports loaded: ${sportsData.length}');
+
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
       setState(() {
         venues = venuesData;
         sports = sportsData;
         isLoading = false;
       });
     } catch (e) {
+<<<<<<< HEAD
+=======
+      print('Error loading home data: $e');
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
       setState(() => isLoading = false);
     }
   }
 
+<<<<<<< HEAD
   final List<List<Color>> _sportGradients = [
     [const Color(0xFF1565C0), const Color(0xFF42A5F5)],
     [const Color(0xFF6A1B9A), const Color(0xFFAB47BC)],
@@ -66,6 +84,8 @@ class _HomeScreenState extends State<HomeScreen> {
     Icons.sports,
   ];
 
+=======
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,7 +93,16 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         backgroundColor: ColorsManager.darkBg,
         elevation: 0,
+<<<<<<< HEAD
         title: Image.asset('assets/images/logo.png', height: 32),
+=======
+        title: Row(
+          children: [
+            Image.asset('assets/images/logo.png', height: 32),
+            const SizedBox(width: 8),
+          ],
+        ),
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
         actions: [
           GestureDetector(
             onTap: () => Navigator.pushNamed(context, Routes.profileScreen),
@@ -109,6 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const HomeTopBar(),
                     verticalSpace(20),
                     const DoctorsBlueContainer(),
+<<<<<<< HEAD
                     verticalSpace(28),
 
                     // Sports Header
@@ -268,6 +298,136 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         );
                       },
+=======
+                    verticalSpace(20),
+
+                    // ✅ Find Nearby Courts Button
+                    GestureDetector(
+                      onTap: () =>
+                          Navigator.pushNamed(context, Routes.nearbyScreen),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                          horizontal: 16,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(
+                              Icons.location_on,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                            SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Find Nearby Courts',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  'Discover sports courts near you',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Spacer(),
+                            Icon(
+                              Icons.arrow_forward_ios,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    verticalSpace(28),
+                    const DoctorsSpecialitySeeAll(),
+                    verticalSpace(18),
+
+                    // Sports Grid
+                    Row(
+                      children: sports.map((sport) {
+                        return Expanded(
+                          child: GestureDetector(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => SportDetailsScreen(
+                                  sportId: sport.id,
+                                  sportName: sport.name,
+                                  venues: venues,
+                                ),
+                              ),
+                            ),
+                            child: Container(
+                              margin: EdgeInsets.only(
+                                right: sport == sports.last ? 0 : 12,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 16,
+                                horizontal: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: ColorsManager.cardBg,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: ColorsManager.borderColor,
+                                  width: 0.5,
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 52,
+                                    height: 52,
+                                    decoration: BoxDecoration(
+                                      color: ColorsManager.primaryBlue
+                                          .withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        sport.icon ?? '🏅',
+                                        style: const TextStyle(fontSize: 26),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    sport.name,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
                     ),
                     verticalSpace(8),
                   ],

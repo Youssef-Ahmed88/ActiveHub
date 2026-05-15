@@ -1,14 +1,27 @@
+<<<<<<< HEAD
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_complete_project/core/di/dependency_injection.dart';
+=======
+import 'dart:convert';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
 
 part 'nearby_state.dart';
 
 class NearbyCubit extends Cubit<NearbyState> {
   NearbyCubit() : super(NearbyInitial());
 
+<<<<<<< HEAD
+=======
+  static const String _apiKey = 'AIzaSyAIrq36i54jaUQwhhW3gwEqn5ybEzCoVF8';
+
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
   Position? currentPosition;
   List<Map<String, dynamic>> nearbyCourts = [];
   Set<Marker> markers = {};
@@ -19,7 +32,11 @@ class NearbyCubit extends Cubit<NearbyState> {
       // 1. اجيب location الـ user
       currentPosition = await _getUserLocation();
 
+<<<<<<< HEAD
       // 2. اجيب الملاعب من الـ Laravel API
+=======
+      // 2. اجيب الملاعب القريبة من Google Places
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
       nearbyCourts = await _fetchNearbyCourts(
         currentPosition!.latitude,
         currentPosition!.longitude,
@@ -58,6 +75,7 @@ class NearbyCubit extends Cubit<NearbyState> {
   }
 
   Future<List<Map<String, dynamic>>> _fetchNearbyCourts(
+<<<<<<< HEAD
     double userLat,
     double userLng,
   ) async {
@@ -105,11 +123,46 @@ class NearbyCubit extends Cubit<NearbyState> {
     );
 
     return courts;
+=======
+    double lat,
+    double lng,
+  ) async {
+    final url = Uri.parse(
+      'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
+      '?location=$lat,$lng'
+      '&radius=5000'
+      '&keyword=stadium|sports+court|football|basketball'
+      '&key=$_apiKey',
+    );
+
+    final response = await http.get(url);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to fetch nearby courts');
+    }
+
+    final data = json.decode(response.body);
+    final results = data['results'] as List<dynamic>;
+
+    return results.map((place) {
+      return {
+        'name': place['name'],
+        'address': place['vicinity'] ?? '',
+        'lat': place['geometry']['location']['lat'],
+        'lng': place['geometry']['location']['lng'],
+        'rating': place['rating']?.toString() ?? 'N/A',
+        'isOpen': place['opening_hours']?['open_now'] ?? false,
+      };
+    }).toList();
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
   }
 
   Set<Marker> _buildMarkers() {
     final Set<Marker> result = {};
 
+<<<<<<< HEAD
+=======
+    // Marker الـ user
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
     if (currentPosition != null) {
       result.add(
         Marker(
@@ -124,6 +177,10 @@ class NearbyCubit extends Cubit<NearbyState> {
       );
     }
 
+<<<<<<< HEAD
+=======
+    // Markers الملاعب
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
     for (int i = 0; i < nearbyCourts.length; i++) {
       final court = nearbyCourts[i];
       result.add(
@@ -135,7 +192,11 @@ class NearbyCubit extends Cubit<NearbyState> {
           ),
           infoWindow: InfoWindow(
             title: court['name'],
+<<<<<<< HEAD
             snippet: '${court['distance']} km away',
+=======
+            snippet: court['address'],
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
           ),
         ),
       );

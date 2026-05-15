@@ -4,27 +4,44 @@ import 'package:flutter_complete_project/core/di/dependency_injection.dart';
 import '../data/models/booking_model.dart';
 import '../data/models/time_slot_model.dart';
 
+<<<<<<< HEAD
 abstract class BookingState {}
 
 class BookingInitial extends BookingState {}
 
 class BookingLoading extends BookingState {}
 
+=======
+// States
+abstract class BookingState {}
+
+class BookingInitial extends BookingState {}
+class BookingLoading extends BookingState {}
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
 class BookingLoaded extends BookingState {
   final List<BookingModel> bookings;
   BookingLoaded(this.bookings);
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
 class SlotsLoaded extends BookingState {
   final List<TimeSlotModel> slots;
   SlotsLoaded(this.slots);
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
 class BookingError extends BookingState {
   final String message;
   BookingError(this.message);
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
 class BookingSuccess extends BookingState {
   final BookingModel booking;
   BookingSuccess(this.booking);
@@ -33,9 +50,12 @@ class BookingSuccess extends BookingState {
 class BookingCubit extends Cubit<BookingState> {
   BookingCubit() : super(BookingInitial());
 
+<<<<<<< HEAD
   // ✅ احتفظ بالـ slots عشان نقدر نوصلها من الـ screen
   List<TimeSlotModel> cachedSlots = [];
 
+=======
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
   Future<void> getMyBookings() async {
     emit(BookingLoading());
     try {
@@ -60,6 +80,7 @@ class BookingCubit extends Cubit<BookingState> {
   }
 
   Future<void> getAvailableSlots(int courtId, String date) async {
+<<<<<<< HEAD
     emit(BookingLoading());
     try {
       final apiService = getIt<ApiService>();
@@ -78,10 +99,29 @@ class BookingCubit extends Cubit<BookingState> {
     required int courtId,
     required int timeSlotId,
     required int duration,
+=======
+  emit(BookingLoading());
+  try {
+    final apiService = getIt<ApiService>();
+    final response = await apiService.getAvailableSlots(courtId, date);
+    final List<dynamic> data = response as List<dynamic>;
+    final slots = data.map((e) => TimeSlotModel.fromJson(e)).toList();
+    emit(SlotsLoaded(slots));
+  } catch (e) {
+    emit(BookingError("Failed to load slots: $e"));
+  }
+}
+
+  // New: create booking using time_slot_id
+  Future<void> createBooking({
+    required int courtId,
+    required int timeSlotId,
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
   }) async {
     emit(BookingLoading());
     try {
       final apiService = getIt<ApiService>();
+<<<<<<< HEAD
 
       // ابحث عن الـ slot المختار في الـ cachedSlots
       final startIndex = cachedSlots.indexWhere((s) => s.id == timeSlotId);
@@ -118,8 +158,21 @@ class BookingCubit extends Cubit<BookingState> {
 
       emit(BookingSuccess(lastBooking!));
       await getMyBookings();
+=======
+      final response = await apiService.createBooking({
+        'court_id': courtId,
+        'time_slot_id': timeSlotId,
+      });
+      final booking = BookingModel.fromJson(response['data']);
+      emit(BookingSuccess(booking));
+      await getMyBookings(); // refresh list
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
     } catch (e) {
       emit(BookingError("Failed to create booking: $e"));
     }
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6

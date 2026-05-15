@@ -203,6 +203,7 @@ class _ApiService implements ApiService {
   }
 
   @override
+<<<<<<< HEAD
   Future<dynamic> getOwnerBookings() async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
@@ -224,6 +225,8 @@ class _ApiService implements ApiService {
   }
 
   @override
+=======
+>>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
   Future<dynamic> cancelBooking(int bookingId) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
