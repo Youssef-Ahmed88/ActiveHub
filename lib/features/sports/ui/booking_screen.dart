@@ -38,11 +38,7 @@ class _BookingScreenState extends State<BookingScreen> {
   void _loadSlots() {
     final formattedDate = _formatDate(selectedDate);
     _bookingCubit.getAvailableSlots(widget.venue.id, formattedDate);
-<<<<<<< HEAD
-  }
-=======
     }
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
 
   @override
   void dispose() {
@@ -90,15 +86,8 @@ class _BookingScreenState extends State<BookingScreen> {
           appBar: AppBar(
             backgroundColor: ColorsManager.darkBg,
             elevation: 0,
-<<<<<<< HEAD
-            title: Text(
-              widget.venue.name ?? 'Booking',
-              style: const TextStyle(color: Colors.white),
-            ),
-=======
             title: Text(widget.venue.name ?? 'Booking',
                 style: const TextStyle(color: Colors.white)),
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
             iconTheme: const IconThemeData(color: Colors.white),
           ),
           body: SingleChildScrollView(
@@ -112,14 +101,7 @@ class _BookingScreenState extends State<BookingScreen> {
                   decoration: BoxDecoration(
                     color: ColorsManager.cardBg,
                     borderRadius: BorderRadius.circular(16),
-<<<<<<< HEAD
-                    border: Border.all(
-                      color: ColorsManager.borderColor,
-                      width: 0.5,
-                    ),
-=======
                     border: Border.all(color: ColorsManager.borderColor, width: 0.5),
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
                   ),
                   child: Row(
                     children: [
@@ -130,49 +112,13 @@ class _BookingScreenState extends State<BookingScreen> {
                           color: ColorsManager.primaryBlue.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(12),
                         ),
-<<<<<<< HEAD
-                        child: const Icon(
-                          Icons.sports,
-                          color: ColorsManager.primaryBlue,
-                        ),
-=======
                         child: const Icon(Icons.sports, color: ColorsManager.primaryBlue),
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-<<<<<<< HEAD
-                            Text(
-                              widget.venue.name ?? '',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              widget.venue.address ?? '',
-                              style: const TextStyle(
-                                color: ColorsManager.mutedText,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Text(
-                        'EGP ${pricePerHour.toInt()}/hr',
-                        style: const TextStyle(
-                          color: Colors.green,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-=======
                             Text(widget.venue.name ?? '',
                                 style: const TextStyle(
                                     color: Colors.white,
@@ -190,29 +136,17 @@ class _BookingScreenState extends State<BookingScreen> {
                               color: Colors.green,
                               fontSize: 14,
                               fontWeight: FontWeight.w600)),
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
                     ],
                   ),
                 ),
                 const SizedBox(height: 24),
 
                 // Date picker
-<<<<<<< HEAD
-                const Text(
-                  'Select Date',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-=======
                 const Text('Select Date',
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.w600)),
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
                 const SizedBox(height: 10),
                 GestureDetector(
                   onTap: () async {
@@ -224,12 +158,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       builder: (context, child) => Theme(
                         data: ThemeData.dark().copyWith(
                           colorScheme: const ColorScheme.dark(
-<<<<<<< HEAD
-                            primary: ColorsManager.primaryBlue,
-                          ),
-=======
                               primary: ColorsManager.primaryBlue),
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
                         ),
                         child: child!,
                       ),
@@ -243,34 +172,6 @@ class _BookingScreenState extends State<BookingScreen> {
                     }
                   },
                   child: Container(
-<<<<<<< HEAD
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                    decoration: BoxDecoration(
-                      color: ColorsManager.cardBg,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: ColorsManager.borderColor,
-                        width: 0.5,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.calendar_today,
-                          color: ColorsManager.lightBlue,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
-=======
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     decoration: BoxDecoration(
                       color: ColorsManager.cardBg,
@@ -285,7 +186,6 @@ class _BookingScreenState extends State<BookingScreen> {
                         Text(
                           '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
                           style: const TextStyle(color: Colors.white, fontSize: 14),
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
                         ),
                       ],
                     ),
@@ -294,22 +194,11 @@ class _BookingScreenState extends State<BookingScreen> {
                 const SizedBox(height: 24),
 
                 // Time slots
-<<<<<<< HEAD
-                const Text(
-                  'Select Time Slot',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-=======
                 const Text('Select Time Slot',
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.w600)),
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
                 const SizedBox(height: 10),
 
                 BlocBuilder<BookingCubit, BookingState>(
@@ -317,12 +206,7 @@ class _BookingScreenState extends State<BookingScreen> {
                     if (state is BookingLoading && !_isBooking) {
                       return const Center(
                         child: CircularProgressIndicator(
-<<<<<<< HEAD
-                          color: ColorsManager.primaryBlue,
-                        ),
-=======
                             color: ColorsManager.primaryBlue),
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
                       );
                     } else if (state is SlotsLoaded) {
                       final slots = state.slots;
@@ -333,27 +217,6 @@ class _BookingScreenState extends State<BookingScreen> {
                           decoration: BoxDecoration(
                             color: Colors.red.withOpacity(0.08),
                             borderRadius: BorderRadius.circular(12),
-<<<<<<< HEAD
-                            border: Border.all(
-                              color: Colors.red.withOpacity(0.3),
-                            ),
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(
-                                Icons.event_busy,
-                                color: Colors.red,
-                                size: 18,
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                'No available slots for this date',
-                                style: TextStyle(
-                                  color: Colors.red,
-                                  fontSize: 13,
-                                ),
-                              ),
-=======
                             border: Border.all(color: Colors.red.withOpacity(0.3)),
                           ),
                           child: const Row(
@@ -362,7 +225,6 @@ class _BookingScreenState extends State<BookingScreen> {
                               SizedBox(width: 8),
                               Text('No available slots for this date',
                                   style: TextStyle(color: Colors.red, fontSize: 13)),
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
                             ],
                           ),
                         );
@@ -380,36 +242,20 @@ class _BookingScreenState extends State<BookingScreen> {
                                 : () => setState(() => selectedSlot = slot),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-<<<<<<< HEAD
-                                horizontal: 14,
-                                vertical: 8,
-                              ),
-=======
                                   horizontal: 14, vertical: 8),
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
                               decoration: BoxDecoration(
                                 color: isBooked
                                     ? Colors.red.withOpacity(0.08)
                                     : isSelected
-<<<<<<< HEAD
-                                    ? ColorsManager.primaryBlue
-                                    : ColorsManager.cardBg,
-=======
                                         ? ColorsManager.primaryBlue
                                         : ColorsManager.cardBg,
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
                                   color: isBooked
                                       ? Colors.red.withOpacity(0.4)
                                       : isSelected
-<<<<<<< HEAD
-                                      ? ColorsManager.primaryBlue
-                                      : ColorsManager.borderColor,
-=======
                                           ? ColorsManager.primaryBlue
                                           : ColorsManager.borderColor,
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
                                   width: 0.5,
                                 ),
                               ),
@@ -419,13 +265,8 @@ class _BookingScreenState extends State<BookingScreen> {
                                   color: isBooked
                                       ? Colors.red.withOpacity(0.6)
                                       : isSelected
-<<<<<<< HEAD
-                                      ? Colors.white
-                                      : ColorsManager.mutedText,
-=======
                                           ? Colors.white
                                           : ColorsManager.mutedText,
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
                                   fontSize: 13,
                                   fontWeight: isSelected
                                       ? FontWeight.w600
@@ -440,15 +281,8 @@ class _BookingScreenState extends State<BookingScreen> {
                         }).toList(),
                       );
                     } else if (state is BookingError && !_isBooking) {
-<<<<<<< HEAD
-                      return Text(
-                        state.message,
-                        style: const TextStyle(color: Colors.red),
-                      );
-=======
                       return Text(state.message,
                           style: const TextStyle(color: Colors.red));
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
                     }
                     return const SizedBox();
                   },
@@ -459,23 +293,6 @@ class _BookingScreenState extends State<BookingScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-<<<<<<< HEAD
-                    const Text(
-                      'Duration',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      '$duration ${duration == 1 ? 'hour' : 'hours'}',
-                      style: const TextStyle(
-                        color: ColorsManager.lightBlue,
-                        fontSize: 14,
-                      ),
-                    ),
-=======
                     const Text('Duration',
                         style: TextStyle(
                             color: Colors.white,
@@ -484,7 +301,6 @@ class _BookingScreenState extends State<BookingScreen> {
                     Text('$duration ${duration == 1 ? 'hour' : 'hours'}',
                         style: const TextStyle(
                             color: ColorsManager.lightBlue, fontSize: 14)),
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
                   ],
                 ),
                 SliderTheme(
@@ -511,33 +327,6 @@ class _BookingScreenState extends State<BookingScreen> {
                   decoration: BoxDecoration(
                     color: ColorsManager.cardBg,
                     borderRadius: BorderRadius.circular(16),
-<<<<<<< HEAD
-                    border: Border.all(
-                      color: ColorsManager.borderColor,
-                      width: 0.5,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      _priceRow(
-                        'Price per hour',
-                        'EGP ${pricePerHour.toInt()}',
-                      ),
-                      const SizedBox(height: 8),
-                      _priceRow('Duration', '$duration hr'),
-                      const Divider(color: ColorsManager.borderColor),
-                      _priceRow(
-                        'Total',
-                        'EGP ${totalPrice.toInt()}',
-                        isTotal: true,
-                      ),
-                      const SizedBox(height: 8),
-                      _priceRow(
-                        'Deposit (30%)',
-                        'EGP ${depositAmount.toInt()}',
-                        color: ColorsManager.lightBlue,
-                      ),
-=======
                     border: Border.all(color: ColorsManager.borderColor, width: 0.5),
                   ),
                   child: Column(
@@ -550,7 +339,6 @@ class _BookingScreenState extends State<BookingScreen> {
                       const SizedBox(height: 8),
                       _priceRow('Deposit (30%)', 'EGP ${depositAmount.toInt()}',
                           color: ColorsManager.lightBlue),
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
                     ],
                   ),
                 ),
@@ -572,16 +360,9 @@ class _BookingScreenState extends State<BookingScreen> {
                         _isBooking = true;
                       });
                       context.read<BookingCubit>().createBooking(
-<<<<<<< HEAD
-                        courtId: widget.venue.id,
-                        timeSlotId: selectedSlot!.id,
-                        duration: duration,
-                      );
-=======
                             courtId: widget.venue.id,
                             timeSlotId: selectedSlot!.id,
                           );
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
                     },
               style: ElevatedButton.styleFrom(
                 backgroundColor: ColorsManager.primaryBlue,
@@ -615,37 +396,6 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-<<<<<<< HEAD
-  Widget _priceRow(
-    String label,
-    String value, {
-    bool isTotal = false,
-    Color? color,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: isTotal ? Colors.white : ColorsManager.mutedText,
-            fontSize: isTotal ? 15 : 13,
-            fontWeight: isTotal ? FontWeight.w700 : FontWeight.w400,
-          ),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            color: color ?? (isTotal ? Colors.white : ColorsManager.mutedText),
-            fontSize: isTotal ? 15 : 13,
-            fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-}
-=======
   Widget _priceRow(String label, String value,
       {bool isTotal = false, Color? color}) {
     return Row(
@@ -667,4 +417,4 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 }
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
+

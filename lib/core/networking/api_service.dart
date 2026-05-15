@@ -38,13 +38,6 @@ abstract class ApiService {
   @GET(ApiConstants.myBookings)
   Future<dynamic> getMyBookings();
 
-<<<<<<< HEAD
-  // ✅ Owner Bookings (جديد)
-  @GET(ApiConstants.ownerBookings)
-  Future<dynamic> getOwnerBookings();
-
-=======
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
   @DELETE('/bookings/{id}')
   Future<dynamic> cancelBooking(@Path('id') int bookingId);
 
@@ -78,3 +71,4 @@ abstract class ApiService {
     @Body() Map<String, dynamic> body,
   );
 }
+
