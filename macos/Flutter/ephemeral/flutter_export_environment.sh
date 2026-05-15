@@ -1,12 +1,7 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-<<<<<<< HEAD
 export "FLUTTER_ROOT=C:\Flutter\flutter"
 export "FLUTTER_APPLICATION_PATH=C:\xampp\htdocs\ActiveHub-frontend\ActiveHub_Frontend\Graduation_project\ActiveHub"
-=======
-export "FLUTTER_ROOT=C:\src\flutter"
-export "FLUTTER_APPLICATION_PATH=C:\xampp\htdocs\ActiveHub_frontend_2\ActiveHub_Frontend\Graduation_project\ActiveHub"
->>>>>>> c50fa394e477a91bc69d11ae70fd51e8028e8eb6
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_BUILD_DIR=build"
 export "FLUTTER_BUILD_NAME=1.0.0"
