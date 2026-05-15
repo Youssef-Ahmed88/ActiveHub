@@ -37,7 +37,7 @@ class VenueCard extends StatelessWidget {
                 width: 110,
                 height: 120,
                 fit: BoxFit.cover,
-                errorWidget: (_, __, ___) => Container(
+                errorWidget: (_, _, _) => Container(
                   width: 110,
                   height: 120,
                   color: ColorsManager.fieldBg,

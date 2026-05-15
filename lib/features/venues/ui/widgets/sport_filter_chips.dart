@@ -29,7 +29,7 @@ class _SportFilterChipsState extends State<SportFilterChips> {
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: 16.w),
         itemCount: sports.length,
-        separatorBuilder: (_, __) => SizedBox(width: 8.w),
+        separatorBuilder: (_, _) => SizedBox(width: 8.w),
         itemBuilder: (context, index) {
           final sport = sports[index];
           final isSelected = selected == sport['label'];

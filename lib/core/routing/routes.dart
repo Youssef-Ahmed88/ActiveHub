@@ -4,6 +4,7 @@ class Routes {
   static const String loginScreen = '/loginScreen';
   static const String signUpScreen = '/signUpScreen';
   static const String forgetPasswordScreen = '/forgetPasswordScreen';
+  static const String resetPasswordScreen = '/resetPasswordScreen'; // ✅ جديد
 
   // Main
   static const String homeScreen = '/homeScreen';
@@ -30,9 +31,17 @@ class Routes {
   static const String adminLoginScreen = '/adminLoginScreen';
   static const String adminScreen = '/adminScreen';
 
-  // Owner Panel (NEW)
+  // Owner Panel
   static const String ownerLoginScreen = '/ownerLoginScreen';
   static const String ownerSignUpScreen = '/ownerSignUpScreen';
   static const String ownerScreen = '/ownerScreen';
 
+  // Stadiums (Admin)
+  static const String editStadiumScreen = '/editStadiumScreen';
+
+  // Owner Bookings
+  static const String ownerBookingsScreen = '/ownerBookingsScreen';
+
+  // Nearby Courts
+  static const String nearbyScreen = '/nearbyScreen';
 }

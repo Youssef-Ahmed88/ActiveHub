@@ -4,8 +4,22 @@ import '../logic/profile_cubit.dart';
 import '../../../core/routing/routes.dart';
 import '../../../core/theming/colors.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // تحميل بيانات الملف الشخصي عند فتح الشاشة
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProfileCubit>().loadUserProfile(context);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +29,23 @@ class ProfileScreen extends StatelessWidget {
         title: const Text("Profile"),
         backgroundColor: ColorsManager.cardBg,
       ),
-      body: BlocBuilder<ProfileCubit, ProfileState>(
+      body: BlocConsumer<ProfileCubit, ProfileState>(
+        listener: (context, state) {
+          if (state is ProfileUnauthorized) {
+            // التوكن غير صالح – نخرج المستخدم لتسجيل الدخول
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Session expired. Please login again.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              Routes.loginScreen,
+              (route) => false,
+            );
+          }
+        },
         builder: (context, state) {
           if (state is ProfileLoading) {
             return const Center(
@@ -29,7 +59,6 @@ class ProfileScreen extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  // Avatar
                   CircleAvatar(
                     radius: 55,
                     backgroundColor: ColorsManager.primaryBlue,
@@ -97,7 +126,8 @@ class ProfileScreen extends StatelessWidget {
                     icon: Icons.notifications_outlined,
                     label: "Notifications",
                     color: ColorsManager.primaryBlue,
-                    onPressed: () =>Navigator.pushNamed(context, Routes.notificationsScreen),
+                    onPressed: () => Navigator.pushNamed(
+                        context, Routes.notificationsScreen),
                   ),
                   const SizedBox(height: 12),
 

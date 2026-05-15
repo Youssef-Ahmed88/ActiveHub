@@ -22,23 +22,31 @@ class LoginScreen extends StatelessWidget {
               barrierDismissible: false,
               builder: (_) => const Center(
                 child: CircularProgressIndicator(
-                    color: ColorsManager.primaryBlue),
+                  color: ColorsManager.primaryBlue,
+                ),
               ),
             ),
             success: (_) {
               if (Navigator.canPop(context)) Navigator.pop(context);
               Navigator.pushNamedAndRemoveUntil(
-                  context, Routes.homeScreen, (route) => false);
+                context,
+                Routes.homeScreen,
+                (route) => false,
+              );
             },
             adminSuccess: (_) {
               if (Navigator.canPop(context)) Navigator.pop(context);
               Navigator.pushNamedAndRemoveUntil(
-                  context, Routes.adminScreen, (route) => false);
+                context,
+                Routes.adminScreen,
+                (route) => false,
+              );
             },
             error: (error) {
               if (Navigator.canPop(context)) Navigator.pop(context);
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text(error)));
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(error)));
             },
           );
         },
@@ -53,10 +61,7 @@ class LoginScreen extends StatelessWidget {
                   const SizedBox(height: 60),
 
                   // Logo
-                  Image.asset(
-                    'assets/images/logo.png',
-                    height: 120,
-                  ),
+                  Image.asset('assets/images/logo.png', height: 120),
                   const SizedBox(height: 12),
                   const Text(
                     "Book your court. Play your game.",
@@ -86,9 +91,13 @@ class LoginScreen extends StatelessWidget {
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () => Navigator.pushNamed(
-                          context, Routes.forgetPasswordScreen),
-                      child: const Text("Forgot password?",
-                          style: TextStyle(color: ColorsManager.primaryBlue)),
+                        context,
+                        Routes.forgetPasswordScreen,
+                      ),
+                      child: const Text(
+                        "Forgot password?",
+                        style: TextStyle(color: ColorsManager.primaryBlue),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -100,10 +109,13 @@ class LoginScreen extends StatelessWidget {
                       backgroundColor: ColorsManager.primaryBlue,
                       minimumSize: const Size(double.infinity, 48),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                    child: const Text("Sign in",
-                        style: TextStyle(color: Colors.white, fontSize: 16)),
+                    child: const Text(
+                      "Sign in",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
                   ),
                   const SizedBox(height: 24),
 
@@ -111,15 +123,21 @@ class LoginScreen extends StatelessWidget {
                   Row(
                     children: const [
                       Expanded(
-                          child: Divider(color: ColorsManager.borderColor)),
+                        child: Divider(color: ColorsManager.borderColor),
+                      ),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 12),
-                        child: Text("Or continue with",
-                            style: TextStyle(
-                                color: ColorsManager.mutedText, fontSize: 12)),
+                        child: Text(
+                          "Or continue with",
+                          style: TextStyle(
+                            color: ColorsManager.mutedText,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
                       Expanded(
-                          child: Divider(color: ColorsManager.borderColor)),
+                        child: Divider(color: ColorsManager.borderColor),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -161,14 +179,17 @@ class LoginScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Don't have an account?",
-                          style: TextStyle(color: Colors.grey)),
+                      const Text(
+                        "Don't have an account?",
+                        style: TextStyle(color: Colors.grey),
+                      ),
                       TextButton(
-                        onPressed: () => Navigator.pushNamed(
-                            context, Routes.signUpScreen),
-                        child: const Text("Sign up",
-                            style: TextStyle(
-                                color: ColorsManager.primaryBlue)),
+                        onPressed: () =>
+                            Navigator.pushNamed(context, Routes.signUpScreen),
+                        child: const Text(
+                          "Sign up",
+                          style: TextStyle(color: ColorsManager.primaryBlue),
+                        ),
                       ),
                     ],
                   ),
@@ -230,9 +251,10 @@ class LoginScreen extends StatelessWidget {
             Text(
               label,
               style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500),
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),

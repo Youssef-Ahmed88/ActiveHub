@@ -2,7 +2,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_complete_project/core/helpers/constants.dart';
 import 'package:flutter_complete_project/core/helpers/shared_pref_helper.dart';
 import 'package:flutter_complete_project/core/networking/dio_factory.dart';
+import 'package:flutter/material.dart'; // للوصول إلى Navigator
 import '../data/user.dart';
+import 'package:dio/dio.dart';
 
 abstract class ProfileState {}
 
@@ -16,43 +18,41 @@ class ProfileError extends ProfileState {
   final String message;
   ProfileError(this.message);
 }
+class ProfileUnauthorized extends ProfileState {} // حالة جديدة للتوجيه إلى login
 
 class ProfileCubit extends Cubit<ProfileState> {
   ProfileCubit() : super(ProfileInitial());
 
   User? _currentUser;
 
-  Future<void> loadUserProfile() async {
+  Future<void> loadUserProfile(BuildContext context) async { // تمرير context للتوجيه
     emit(ProfileLoading());
     try {
       final dio = DioFactory.getDio();
+      // طباعة التوكن قبل الطلب (للتأكد)
+      final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.userToken);
+      print('🔑 Token being used for profile: ${token.substring(0, 10)}...'); // جزء فقط
+
       final response = await dio.get('/user');
 
-      // ✅ طباعة كاملة للاستجابة (لتظهر في Terminal)
       print('=== Profile API Response ===');
       print('Status code: ${response.statusCode}');
       print('Full data: ${response.data}');
 
-      // التحقق من نجاح الـ status code
       if (response.statusCode != 200) {
         throw Exception('Server returned ${response.statusCode}');
       }
 
-      // التحقق من أن response.data موجود وليس null
       if (response.data == null) {
         throw Exception('Response data is null');
       }
 
-      // محاولة استخراج البيانات بمرونة (تجربة أكثر من هيكل)
       Map<String, dynamic> userData;
       if (response.data['data'] != null) {
-        // الحالة 1: { "success": true, "data": { ... } }
         userData = response.data['data'];
       } else if (response.data['user'] != null) {
-        // الحالة 2: { "user": { ... } }
         userData = response.data['user'];
       } else if (response.data['id'] != null) {
-        // الحالة 3: البيانات مباشرة { "id": ..., "full_name": ... }
         userData = response.data;
       } else {
         throw Exception('Unknown response structure: ${response.data}');
@@ -67,7 +67,13 @@ class ProfileCubit extends Cubit<ProfileState> {
       emit(ProfileLoaded(_currentUser!));
     } catch (e) {
       print('Profile load error: $e');
-      emit(ProfileError("Failed to load profile: $e"));
+      // إذا كان الخطأ بسبب 401، أصدر حالة Unauthorized لتوجيه المستخدم
+      if (e.toString().contains('401') || (e is DioException && e.response?.statusCode == 401)) {
+        await DioFactory.clearToken(); // امسح التوكن الفاسد
+        emit(ProfileUnauthorized()); // حالة خاصة
+      } else {
+        emit(ProfileError("Failed to load profile: $e"));
+      }
     }
   }
 

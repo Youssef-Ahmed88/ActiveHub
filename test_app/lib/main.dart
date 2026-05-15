@@ -19,7 +19,6 @@ class MyApp extends StatelessWidget {
           primary: Colors.blueAccent,
           secondary: Colors.lightBlueAccent,
           surface: Colors.grey[850]!,
-          background: Colors.black,
         ),
         scaffoldBackgroundColor: Colors.black,
         appBarTheme: const AppBarTheme(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
-import 'package:flutter_complete_project/core/di/dependency_injection.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'logic/chatbot_cubit.dart';
 import '../../../core/theming/colors.dart';
 
 class ChatbotScreen extends StatefulWidget {
@@ -17,44 +17,24 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       "text": "👋 Hi! I'm ActiveHub Assistant.\nI can help you with:\n• Court availability\n• Prices\n• Booking process\n• Sports types\n\nHow can I help you today?"
     },
   ];
-
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  bool _isTyping = false;
+  late ChatbotCubit _cubit;
 
-  void _sendMessage(String text) async {
+  @override
+  void initState() {
+    super.initState();
+    _cubit = context.read<ChatbotCubit>();
+  }
+
+  void _sendMessage(String text) {
     if (text.trim().isEmpty) return;
-
     setState(() {
       messages.add({"sender": "user", "text": text});
-      _isTyping = true;
     });
     _controller.clear();
     _scrollToBottom();
-
-    try {
-      final dio = getIt<Dio>();
-      final response = await dio.post('/chatbot', data: {
-        'message': text,
-      });
-
-      final botReply = response.data['data']['reply'] ?? 'عفواً، حدث خطأ.';
-
-      setState(() {
-        _isTyping = false;
-        messages.add({"sender": "bot", "text": botReply});
-      });
-    } catch (e) {
-      setState(() {
-        _isTyping = false;
-        messages.add({
-          "sender": "bot",
-          "text": "Sorry, something went wrong. Please try again."
-        });
-      });
-    }
-
-    _scrollToBottom();
+    _cubit.sendMessage(text);
   }
 
   void _scrollToBottom() {
@@ -71,122 +51,130 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ColorsManager.darkBg,
-      appBar: AppBar(
-        backgroundColor: ColorsManager.cardBg,
-        elevation: 0,
-        title: Row(
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: ColorsManager.primaryBlue,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.smart_toy, color: Colors.white, size: 22),
-            ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return BlocConsumer<ChatbotCubit, ChatbotState>(
+      listener: (context, state) {
+        if (state is ChatbotSuccess) {
+          setState(() {
+            messages.add({"sender": "bot", "text": state.reply});
+          });
+          _scrollToBottom();
+        } else if (state is ChatbotError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+          );
+        }
+      },
+      builder: (context, state) {
+        final bool isLoading = state is ChatbotLoading;
+        return Scaffold(
+          backgroundColor: ColorsManager.darkBg,
+          appBar: AppBar(
+            backgroundColor: ColorsManager.cardBg,
+            elevation: 0,
+            title: Row(
               children: [
-                const Text(
-                  'ActiveHub Assistant',
-                  style: TextStyle(color: Colors.white, fontSize: 15),
-                ),
-                Text(
-                  'Always here to help',
-                  style: TextStyle(color: ColorsManager.mutedText, fontSize: 11),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16),
-              itemCount: messages.length + (_isTyping ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (_isTyping && index == messages.length) {
-                  return _buildTypingIndicator();
-                }
-                final msg = messages[index];
-                final isUser = msg["sender"] == "user";
-                return _buildMessage(msg["text"]!, isUser);
-              },
-            ),
-          ),
-
-          // Quick Replies
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                _quickReply('💰 Prices'),
-                _quickReply('📅 How to book'),
-                _quickReply('⚽ Sports'),
-                _quickReply('📍 Location'),
-                _quickReply('❌ Cancel'),
-              ],
-            ),
-          ),
-
-          // Input
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: ColorsManager.cardBg,
-              border: Border(top: BorderSide(color: ColorsManager.borderColor)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: 'Ask me anything...',
-                      hintStyle: const TextStyle(color: ColorsManager.mutedText),
-                      filled: true,
-                      fillColor: ColorsManager.fieldBg,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 10),
-                    ),
-                    onSubmitted: _sendMessage,
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: ColorsManager.primaryBlue,
+                    borderRadius: BorderRadius.circular(10),
                   ),
+                  child: const Icon(Icons.smart_toy, color: Colors.white, size: 22),
                 ),
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: () {
-                    if (_controller.text.isNotEmpty) {
-                      _sendMessage(_controller.text);
+                const SizedBox(width: 10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('ActiveHub Assistant', style: TextStyle(color: Colors.white, fontSize: 15)),
+                    Text('Always here to help', style: TextStyle(color: ColorsManager.mutedText, fontSize: 11)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          body: Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.all(16),
+                  itemCount: messages.length + (isLoading ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (isLoading && index == messages.length) {
+                      return _buildTypingIndicator();
                     }
+                    final msg = messages[index];
+                    final isUser = msg["sender"] == "user";
+                    return _buildMessage(msg["text"]!, isUser);
                   },
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: ColorsManager.primaryBlue,
-                      borderRadius: BorderRadius.circular(22),
-                    ),
-                    child: const Icon(Icons.send, color: Colors.white, size: 20),
-                  ),
                 ),
-              ],
-            ),
+              ),
+              // Quick Replies
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  children: [
+                    _quickReply('💰 Prices'),
+                    _quickReply('📅 How to book'),
+                    _quickReply('⚽ Sports'),
+                    _quickReply('📍 Location'),
+                    _quickReply('❌ Cancel'),
+                  ],
+                ),
+              ),
+              // Input
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: ColorsManager.cardBg,
+                  border: Border(top: BorderSide(color: ColorsManager.borderColor)),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: 'Ask me anything...',
+                          hintStyle: const TextStyle(color: ColorsManager.mutedText),
+                          filled: true,
+                          fillColor: ColorsManager.fieldBg,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        ),
+                        onSubmitted: _sendMessage,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () {
+                        if (_controller.text.isNotEmpty) {
+                          _sendMessage(_controller.text);
+                        }
+                      },
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: ColorsManager.primaryBlue,
+                          borderRadius: BorderRadius.circular(22),
+                        ),
+                        child: const Icon(Icons.send, color: Colors.white, size: 20),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -194,8 +182,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
-        mainAxisAlignment:
-            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isUser) ...[
@@ -212,8 +199,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           ],
           Flexible(
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: isUser ? ColorsManager.primaryBlue : ColorsManager.cardBg,
                 borderRadius: BorderRadius.only(
@@ -222,17 +208,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   bottomLeft: Radius.circular(isUser ? 16 : 4),
                   bottomRight: Radius.circular(isUser ? 4 : 16),
                 ),
-                border: isUser
-                    ? null
-                    : Border.all(color: ColorsManager.borderColor, width: 0.5),
+                border: isUser ? null : Border.all(color: ColorsManager.borderColor, width: 0.5),
               ),
               child: Text(
                 text,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  height: 1.5,
-                ),
+                style: const TextStyle(color: Colors.white, fontSize: 14, height: 1.5),
               ),
             ),
           ),
@@ -313,5 +293,12 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 }

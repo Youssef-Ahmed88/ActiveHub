@@ -4,23 +4,27 @@ import 'package:flutter_complete_project/core/di/dependency_injection.dart';
 import '../data/models/booking_model.dart';
 import '../data/models/time_slot_model.dart';
 
-// States
 abstract class BookingState {}
 
 class BookingInitial extends BookingState {}
+
 class BookingLoading extends BookingState {}
+
 class BookingLoaded extends BookingState {
   final List<BookingModel> bookings;
   BookingLoaded(this.bookings);
 }
+
 class SlotsLoaded extends BookingState {
   final List<TimeSlotModel> slots;
   SlotsLoaded(this.slots);
 }
+
 class BookingError extends BookingState {
   final String message;
   BookingError(this.message);
 }
+
 class BookingSuccess extends BookingState {
   final BookingModel booking;
   BookingSuccess(this.booking);
@@ -28,6 +32,9 @@ class BookingSuccess extends BookingState {
 
 class BookingCubit extends Cubit<BookingState> {
   BookingCubit() : super(BookingInitial());
+
+  // ✅ احتفظ بالـ slots عشان نقدر نوصلها من الـ screen
+  List<TimeSlotModel> cachedSlots = [];
 
   Future<void> getMyBookings() async {
     emit(BookingLoading());
@@ -52,34 +59,65 @@ class BookingCubit extends Cubit<BookingState> {
     }
   }
 
-  Future<void> getAvailableSlots(int courtId) async {
+  Future<void> getAvailableSlots(int courtId, String date) async {
     emit(BookingLoading());
     try {
       final apiService = getIt<ApiService>();
-      final response = await apiService.getAvailableSlots(courtId);
+      final response = await apiService.getAvailableSlots(courtId, date);
       final List<dynamic> data = response as List<dynamic>;
       final slots = data.map((e) => TimeSlotModel.fromJson(e)).toList();
+      cachedSlots = slots; // ✅ احفظ الـ slots
       emit(SlotsLoaded(slots));
     } catch (e) {
       emit(BookingError("Failed to load slots: $e"));
     }
   }
 
-  // New: create booking using time_slot_id
+  // ✅ createBooking مع دعم الـ duration
   Future<void> createBooking({
     required int courtId,
     required int timeSlotId,
+    required int duration,
   }) async {
     emit(BookingLoading());
     try {
       final apiService = getIt<ApiService>();
-      final response = await apiService.createBooking({
-        'court_id': courtId,
-        'time_slot_id': timeSlotId,
-      });
-      final booking = BookingModel.fromJson(response['data']);
-      emit(BookingSuccess(booking));
-      await getMyBookings(); // refresh list
+
+      // ابحث عن الـ slot المختار في الـ cachedSlots
+      final startIndex = cachedSlots.indexWhere((s) => s.id == timeSlotId);
+      if (startIndex == -1) {
+        emit(BookingError("Selected slot not found"));
+        return;
+      }
+
+      // تأكد إن في slots كفاية
+      if (startIndex + duration > cachedSlots.length) {
+        emit(BookingError("Not enough consecutive slots available"));
+        return;
+      }
+
+      // تأكد إن كل الـ slots المطلوبة متاحة
+      for (int i = startIndex; i < startIndex + duration; i++) {
+        if (!cachedSlots[i].isAvailable) {
+          emit(
+            BookingError("Slot ${cachedSlots[i].startTime} is not available"),
+          );
+          return;
+        }
+      }
+
+      // احجز كل الـ slots
+      BookingModel? lastBooking;
+      for (int i = startIndex; i < startIndex + duration; i++) {
+        final response = await apiService.createBooking({
+          'court_id': courtId,
+          'time_slot_id': cachedSlots[i].id,
+        });
+        lastBooking = BookingModel.fromJson(response['data']);
+      }
+
+      emit(BookingSuccess(lastBooking!));
+      await getMyBookings();
     } catch (e) {
       emit(BookingError("Failed to create booking: $e"));
     }

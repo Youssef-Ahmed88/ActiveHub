@@ -6,10 +6,8 @@ import 'package:flutter_complete_project/features/venues/data/venue_api.dart';
 import 'package:flutter_complete_project/features/sports/data/models/sport.dart';
 import 'package:flutter_complete_project/features/sports/data/sport_api.dart';
 import 'package:flutter_complete_project/features/sports/data/repos/sport_repository.dart';
-import 'package:dio/dio.dart';
-import 'package:flutter_complete_project/core/networking/dio_factory.dart'; // ✅ استخدمنا DioFactory بدلاً من getIt
+import 'package:flutter_complete_project/core/networking/dio_factory.dart';
 import 'widgets/home_banner.dart';
-import 'widgets/sports_see_all.dart';
 import 'widgets/home_top_bar.dart';
 import '../../../core/theming/colors.dart';
 import '../../sports/ui/sport_details_screen.dart';
@@ -35,28 +33,38 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadData() async {
     try {
-      // ✅ استخدام DioFactory بدلاً من getIt<Dio>()
       final dio = DioFactory.getDio();
       final venueRepo = VenueRepository(VenueApi(dio));
       final sportRepo = SportRepository(SportApi(dio));
-
       final venuesData = await venueRepo.getVenues();
       final sportsData = await sportRepo.getSports();
-
-      // ✅ طباعة عدد الرياضات للتأكد (تظهر في Terminal)
-      print('Number of sports loaded: ${sportsData.length}');
-
       setState(() {
         venues = venuesData;
         sports = sportsData;
         isLoading = false;
       });
     } catch (e) {
-      // ✅ طباعة الخطأ التفصيلي
-      print('Error loading home data: $e');
       setState(() => isLoading = false);
     }
   }
+
+  final List<List<Color>> _sportGradients = [
+    [const Color(0xFF1565C0), const Color(0xFF42A5F5)],
+    [const Color(0xFF6A1B9A), const Color(0xFFAB47BC)],
+    [const Color(0xFF00695C), const Color(0xFF26A69A)],
+    [const Color(0xFFE65100), const Color(0xFFFF9800)],
+    [const Color(0xFFB71C1C), const Color(0xFFEF5350)],
+    [const Color(0xFF1B5E20), const Color(0xFF66BB6A)],
+  ];
+
+  final List<IconData> _sportIcons = [
+    Icons.sports_soccer,
+    Icons.sports_basketball,
+    Icons.sports_tennis,
+    Icons.sports_volleyball,
+    Icons.sports_handball,
+    Icons.sports,
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -65,12 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         backgroundColor: ColorsManager.darkBg,
         elevation: 0,
-        title: Row(
-          children: [
-            Image.asset('assets/images/logo.png', height: 32),
-            const SizedBox(width: 8),
-          ],
-        ),
+        title: Image.asset('assets/images/logo.png', height: 32),
         actions: [
           GestureDetector(
             onTap: () => Navigator.pushNamed(context, Routes.profileScreen),
@@ -81,10 +84,16 @@ class _HomeScreenState extends State<HomeScreen> {
               decoration: BoxDecoration(
                 color: ColorsManager.cardBg,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: ColorsManager.borderColor, width: 0.5),
+                border: Border.all(
+                  color: ColorsManager.borderColor,
+                  width: 0.5,
+                ),
               ),
-              child: const Icon(Icons.person_outline,
-                  color: ColorsManager.lightBlue, size: 20),
+              child: const Icon(
+                Icons.person_outline,
+                color: ColorsManager.lightBlue,
+                size: 20,
+              ),
             ),
           ),
         ],
@@ -101,70 +110,164 @@ class _HomeScreenState extends State<HomeScreen> {
                     verticalSpace(20),
                     const DoctorsBlueContainer(),
                     verticalSpace(28),
-                    const DoctorsSpecialitySeeAll(),
-                    verticalSpace(18),
 
-                    // Sports Grid
+                    // Sports Header
                     Row(
-                      children: sports.map((sport) {
-                        return Expanded(
-                          child: GestureDetector(
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => SportDetailsScreen(
-                                  sportId: sport.id,
-                                  sportName: sport.name,
-                                  venues: venues,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Sports Courts',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () =>
+                              Navigator.pushNamed(context, Routes.venuesScreen),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: ColorsManager.primaryBlue.withValues(
+                                alpha: 0.15,
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: ColorsManager.primaryBlue.withValues(
+                                  alpha: 0.3,
                                 ),
                               ),
                             ),
-                            child: Container(
-                              margin: EdgeInsets.only(
-                                right: sport == sports.last ? 0 : 12,
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 16, horizontal: 8),
-                              decoration: BoxDecoration(
-                                color: ColorsManager.cardBg,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                    color: ColorsManager.borderColor,
-                                    width: 0.5),
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    width: 52,
-                                    height: 52,
-                                    decoration: BoxDecoration(
-                                      color: ColorsManager.primaryBlue.withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        sport.icon ?? '🏅',
-                                        style: const TextStyle(fontSize: 26),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    sport.name,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
+                            child: const Text(
+                              'See All',
+                              style: TextStyle(
+                                color: ColorsManager.primaryBlue,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
+                        ),
+                      ],
+                    ),
+                    verticalSpace(16),
+
+                    // Sports Grid
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 1,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 2.8,
+                          ),
+                      itemCount: sports.length,
+                      itemBuilder: (context, index) {
+                        final sport = sports[index];
+                        final gradient =
+                            _sportGradients[index % _sportGradients.length];
+                        final icon = _sportIcons[index % _sportIcons.length];
+
+                        return GestureDetector(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => SportDetailsScreen(
+                                sportId: sport.id,
+                                sportName: sport.name,
+                                venues: venues,
+                              ),
+                            ),
+                          ),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: gradient,
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: gradient[0].withValues(alpha: 0.3),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: Stack(
+                              children: [
+                                // Background icon
+                                Positioned(
+                                  right: -10,
+                                  bottom: -10,
+                                  child: Icon(
+                                    icon,
+                                    size: 80,
+                                    color: Colors.white.withValues(alpha: 0.1),
+                                  ),
+                                ),
+                                // Content
+                                Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.2,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          sport.icon ?? '🏅',
+                                          style: const TextStyle(fontSize: 22),
+                                        ),
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            sport.name,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            'Tap to explore',
+                                            style: TextStyle(
+                                              color: Colors.white.withValues(
+                                                alpha: 0.7,
+                                              ),
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         );
-                      }).toList(),
+                      },
                     ),
                     verticalSpace(8),
                   ],

@@ -13,7 +13,8 @@ class SignupCubit extends Cubit<SignupState> {
   TextEditingController emailController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  TextEditingController passwordConfirmationController = TextEditingController();
+  TextEditingController passwordConfirmationController =
+      TextEditingController();
   final formKey = GlobalKey<FormState>();
 
   void emitSignupStates() async {
@@ -32,7 +33,11 @@ class SignupCubit extends Cubit<SignupState> {
         emit(SignupState.signupSuccess(signupResponse));
       },
       failure: (errorState) {
-        emit(SignupState.signupError(error: errorState.apiErrorModel.message ?? ''));
+        emit(
+          SignupState.signupError(
+            error: errorState.apiErrorModel.message ?? '',
+          ),
+        );
       },
     );
   }
