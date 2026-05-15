@@ -37,6 +37,7 @@ class ChatbotController extends Controller
 
     public function chat(Request $request)
     {
+        Log::info('GROQ KEY: ' . env('GROQ_API_KEY'));
         $request->validate([
             'message' => 'required|string|max:500',
         ]);
@@ -128,15 +129,19 @@ class ChatbotController extends Controller
         ";
 
         try {
-            $response = Http::timeout(30)->withHeaders([
-                'Authorization' => 'Bearer ' . env('GROQ_API_KEY'),
-                'Content-Type'  => 'application/json',
-            ])->post('https://api.groq.com/openai/v1/chat/completions', [
-                'model'    => 'llama-3.3-70b-versatile',
-                'messages' => [
-                    ['role' => 'user', 'content' => $prompt]
-                ],
-            ]);
+            $response = Http::timeout(30)
+    ->withOptions([
+        'verify' => false,  // ✅ حل SSL
+    ])
+    ->withHeaders([
+        'Authorization' => 'Bearer ' . config('services.groq.key'),
+        'Content-Type'  => 'application/json',
+    ])->post('https://api.groq.com/openai/v1/chat/completions', [
+        'model'    => 'llama-3.3-70b-versatile',
+        'messages' => [
+            ['role' => 'user', 'content' => $prompt]
+        ],
+    ]);
 
             if ($response->failed()) {
                 Log::error('Groq API error: ' . $response->body());

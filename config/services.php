@@ -1,7 +1,10 @@
 <?php
 
 return [
-
+    // ... other services
+    'groq' => [
+        'api_key' => env('GROQ_API_KEY'),
+    ],
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
