@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
+use App\Models\Booking;
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -36,6 +38,14 @@ class PaymentController extends Controller
         ]);
 
         $payment = Payment::create($validated);
+
+        // ✅ بعد إنشاء الـ payment، غير الـ booking status لـ confirmed
+        $booking = Booking::find($validated['booking_id']);
+        if ($booking) {
+            $booking->update(['status' => 'confirmed']);
+            Log::info("Booking {$booking->id} confirmed after payment");
+        }
+
         return ApiResponse::success($payment, 'Payment created successfully', 201);
     }
 }

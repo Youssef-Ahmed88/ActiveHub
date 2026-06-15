@@ -37,6 +37,31 @@ class BookingController extends Controller
             'data'    => $bookings
         ]);
     }
+
+    // ✅ PATCH /api/bookings/{id}/confirm
+    public function confirm(int $id)
+    {
+        $booking = Booking::with('court.sport')->findOrFail($id);
+
+        if ($booking->user_id !== Auth::id()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $booking->update(['status' => 'confirmed']);
+
+        Notification::create([
+            'user_id'    => Auth::id(),
+            'message'    => "Your booking at {$booking->court->name} has been confirmed! ✅",
+            'sport_type' => $booking->court->sport?->name ?? 'Sport',
+            'is_read'    => false,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Booking confirmed successfully',
+            'data'    => $booking
+        ]);
+    }
  
     // POST /api/bookings
     public function store(Request $request)
@@ -69,7 +94,7 @@ class BookingController extends Controller
             ], 400);
         }
  
-        $court = \App\Models\Court::findOrFail($request->court_id);
+        $court = \App\Models\Court::with('sport')->findOrFail($request->court_id);
  
         $start = Carbon::parse($timeSlot->slot_date . ' ' . $timeSlot->start_time);
         $end   = Carbon::parse($timeSlot->slot_date . ' ' . $timeSlot->end_time);
@@ -84,16 +109,16 @@ class BookingController extends Controller
             'start_time'   => $start,
             'end_time'     => $end,
             'total_price'  => $total_price,
-            'status'       => 'confirmed',
+            'status'       => 'pending',
         ]);
  
         $timeSlot->update(['is_available' => false]);
  
-        // إنشاء notification للـ user
         Notification::create([
-            'user_id' => Auth::id(),
-            'message' => "Your booking at {$court->name} on {$timeSlot->slot_date} from {$timeSlot->start_time} to {$timeSlot->end_time} has been confirmed! ✅",
-            'is_read' => false,
+            'user_id'    => Auth::id(),
+            'message'    => "Your booking has been created and is waiting for payment. ⏳",
+            'sport_type' => $court->sport?->name ?? 'Sport',
+            'is_read'    => false,
         ]);
  
         return response()->json([
@@ -106,7 +131,7 @@ class BookingController extends Controller
     // DELETE /api/bookings/{id}
     public function destroy(int $id)
     {
-        $booking = Booking::findOrFail($id);
+        $booking = Booking::with('court.sport')->findOrFail($id);
  
         if ($booking->user_id !== Auth::id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
@@ -115,11 +140,11 @@ class BookingController extends Controller
         TimeSlot::where('id', $booking->time_slot_id)
             ->update(['is_available' => true]);
  
-        // إنشاء notification للـ user
         Notification::create([
-            'user_id' => Auth::id(),
-            'message' => "Your booking has been cancelled successfully. ❌",
-            'is_read' => false,
+            'user_id'    => Auth::id(),
+            'message'    => "Your booking has been cancelled successfully. ❌",
+            'sport_type' => $booking->court->sport?->name ?? 'Sport',
+            'is_read'    => false,
         ]);
  
         $booking->delete();

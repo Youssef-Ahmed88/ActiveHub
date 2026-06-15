@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 class TimeSlotController extends Controller
 {
     // GET /api/courts/{id}/slots
-public function available($courtId, Request $request)
+public function available(int $courtId, Request $request)
 {
     $date = $request->query('date'); // مثلاً '2026-05-07'
     $query = TimeSlot::where('court_id', $courtId);

@@ -14,77 +14,31 @@ use Illuminate\Support\Facades\Log;
 
 class ChatbotController extends Controller
 {
-    // أنماط البيانات الحساسة التي يجب حظرها
     private array $sensitivePatterns = [
-        '/\b\d{16}\b/',                    // أرقام بطاقات الائتمان
-        '/\b\d{4}[\s-]\d{4}[\s-]\d{4}[\s-]\d{4}\b/', // بطاقة بصيغة أخرى
-        '/\bcvv\b|\bcvc\b/i',              // CVV/CVC
-        '/\bpassword\b|\bكلمة المرور\b/i', // كلمات المرور
-        '/\bpin\b|\bرقم سري\b/i',          // PIN
-        '/\b\d{3}\b.*\b(cvv|cvc)\b/i',    // رقم CVV
-    ];
-
-    // الأسئلة التي تحاول استخراج بيانات مستخدمين آخرين
-    private array $privacyViolationPatterns = [
-        '/بيانات.*مستخدم/i',
-        '/معلومات.*حساب.*آخر/i',
-        '/credit.*card.*user/i',
-        '/show.*user.*data/i',
-        '/get.*user.*password/i',
-        '/بطاقة.*شخص/i',
-        '/حساب.*شخص.*آخر/i',
+        '/\b\d{16}\b/',
+        '/\b\d{4}[\s-]\d{4}[\s-]\d{4}[\s-]\d{4}\b/',
+        '/\bcvv\b|\bcvc\b/i',
+        '/\bpin\b/i',
     ];
 
     public function chat(Request $request)
     {
-        Log::info('GROQ KEY: ' . env('GROQ_API_KEY'));
         $request->validate([
             'message' => 'required|string|max:500',
         ]);
 
         $userMessage = $request->message;
 
-        // 1. فحص البيانات الحساسة في الرسالة
         foreach ($this->sensitivePatterns as $pattern) {
             if (preg_match($pattern, $userMessage)) {
-                Log::warning('Sensitive data attempt in chatbot', [
-                    'user_id' => Auth::id(),
-                    'message_length' => strlen($userMessage),
-                ]);
-
                 return response()->json([
                     'success' => false,
-                    'message' => 'لا ترسل بيانات حساسة مثل أرقام البطاقات أو كلمات المرور. بياناتك الشخصية يجب أن تظل سرية.',
+                    'message' => 'لا ترسل بيانات حساسة مثل أرقام البطاقات.',
                     'data'    => null,
                 ], 400);
             }
         }
 
-        // 2. فحص محاولات الوصول لبيانات مستخدمين آخرين
-        foreach ($this->privacyViolationPatterns as $pattern) {
-            if (preg_match($pattern, $userMessage)) {
-                Log::warning('Privacy violation attempt in chatbot', [
-                    'user_id' => Auth::id(),
-                    'pattern_matched' => $pattern,
-                ]);
-
-                return response()->json([
-                    'success' => false,
-                    'message' => 'لا يمكنك الوصول إلى بيانات مستخدمين آخرين. كل مستخدم يرى بياناته فقط.',
-                    'data'    => null,
-                ], 403);
-            }
-        }
-
-        // 3. فحص طول الرسالة المشبوهة
-        if (strlen($userMessage) > 300) {
-            Log::warning('Suspiciously long chatbot message', [
-                'user_id' => Auth::id(),
-                'length'  => strlen($userMessage),
-            ]);
-        }
-
-        // جلب البيانات الحقيقية من DB
         $sports = Sport::all(['id', 'name'])->toArray();
         $courts = Court::limit(10)->get(['id', 'name', 'sport_id', 'price_per_hour', 'address'])->toArray();
         $slots  = TimeSlot::where('is_available', true)->limit(20)->get(['court_id', 'slot_date', 'start_time', 'end_time'])->toArray();
@@ -102,12 +56,6 @@ class ChatbotController extends Controller
         يجب أن ترد دائماً باللغة العربية الفصحى فقط.
         لا تخترع أي معلومات - استخدم فقط البيانات المتاحة أدناه.
         إذا كانت المعلومات موجودة في البيانات أدناه، يجب أن تذكرها.
-
-        قواعد الخصوصية والأمان (مهم جداً):
-        - لا تشارك أي بيانات شخصية لأي مستخدم مع مستخدم آخر
-        - لا تذكر أي معلومات عن بطاقات الائتمان أو كلمات المرور
-        - إذا سأل المستخدم عن بيانات شخصية لمستخدم آخر، ارفض بشكل قاطع
-        - أنت تعمل فقط على بيانات الملاعب والحجوزات العامة
 
         الرياضات المتاحة: {$sportsText}
 
@@ -130,18 +78,16 @@ class ChatbotController extends Controller
 
         try {
             $response = Http::timeout(30)
-    ->withOptions([
-        'verify' => false,  // ✅ حل SSL
-    ])
-    ->withHeaders([
-        'Authorization' => 'Bearer ' . config('services.groq.key'),
-        'Content-Type'  => 'application/json',
-    ])->post('https://api.groq.com/openai/v1/chat/completions', [
-        'model'    => 'llama-3.3-70b-versatile',
-        'messages' => [
-            ['role' => 'user', 'content' => $prompt]
-        ],
-    ]);
+                ->withOptions(['verify' => false])
+                ->withHeaders([
+                    'Authorization' => 'Bearer ' . config('services.groq.api_key'),
+                    'Content-Type'  => 'application/json',
+                ])->post('https://api.groq.com/openai/v1/chat/completions', [
+                    'model'    => 'llama-3.3-70b-versatile',
+                    'messages' => [
+                        ['role' => 'user', 'content' => $prompt]
+                    ],
+                ]);
 
             if ($response->failed()) {
                 Log::error('Groq API error: ' . $response->body());
@@ -154,7 +100,6 @@ class ChatbotController extends Controller
             $botReply = 'حدث خطأ في الاتصال بالمساعد الذكي. الرجاء المحاولة لاحقاً.';
         }
 
-        // تسجيل المحادثة
         ChatbotLog::create([
             'user_id'  => Auth::id(),
             'query'    => $userMessage,
