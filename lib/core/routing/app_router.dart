@@ -44,6 +44,7 @@ import 'package:flutter_complete_project/features/stadiums/logic/edit_stadium_cu
 import 'package:flutter_complete_project/features/bookings/ui/owner_bookings_screen.dart';
 import 'package:flutter_complete_project/features/nearby/ui/nearby_screen.dart';
 import 'package:flutter_complete_project/features/nearby/logic/nearby_cubit.dart';
+import 'package:flutter_complete_project/features/payment/ui/paymob_webview_screen.dart';
 
 class ActiveHubShell extends StatefulWidget {
   final Widget child;
@@ -104,8 +105,8 @@ class AppRouter {
       case Routes.forgetPasswordScreen:
         return _buildRoute(
           BlocProvider(
-            create: (_) => ForgetPasswordCubit(),
-            child: const ForgetPasswordScreen(),
+            create: (_) => ForgotPasswordCubit(),
+            child: const ForgotPasswordScreen(),
           ),
         );
 
@@ -113,7 +114,7 @@ class AppRouter {
       case Routes.resetPasswordScreen:
         return _buildRoute(
           BlocProvider(
-            create: (_) => ForgetPasswordCubit(),
+            create: (_) => ForgotPasswordCubit(),
             child: const ResetPasswordScreen(),
           ),
         );
@@ -142,6 +143,16 @@ class AppRouter {
           ),
         );
 
+      case Routes.paymobWebView:
+        final args = settings.arguments as Map<String, dynamic>?;
+        if (args == null) return _errorRoute("No payment data");
+        return _buildRoute(
+          PaymobWebViewScreen(
+            iframeUrl: args['iframe_url'] as String,
+            bookingId: args['booking_id'] as int,
+            amount: args['amount'] as double,
+          ),
+        );
       case Routes.venueDetailsScreen:
         final venue = settings.arguments as Venue?;
         if (venue == null) return _errorRoute("No venue provided");

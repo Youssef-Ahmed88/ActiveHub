@@ -37,20 +37,25 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: BlocConsumer<ForgetPasswordCubit, ForgotPasswordState>(
+      body: BlocConsumer<ForgotPasswordCubit, ForgotPasswordState>(
         listener: (context, state) {
           if (state is ForgotPasswordSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('✅ Password reset successfully!'),
                 backgroundColor: Colors.green,
+                duration: Duration(seconds: 3),
               ),
             );
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.loginScreen,
-              (route) => false,
-            );
+            Future.delayed(const Duration(seconds: 2), () {
+              if (context.mounted) {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  Routes.loginScreen,
+                  (route) => false,
+                );
+              }
+            });
           } else if (state is ForgotPasswordError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -196,7 +201,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                               );
                               return;
                             }
-                            context.read<ForgetPasswordCubit>().resetPassword(
+                            context.read<ForgotPasswordCubit>().resetPassword(
                               code: _codeController.text.trim(),
                               password: _passwordController.text,
                               passwordConfirmation: _confirmController.text,

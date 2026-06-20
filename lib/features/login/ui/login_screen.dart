@@ -5,8 +5,56 @@ import 'package:flutter_complete_project/features/login/logic/cubit/login_state.
 import '../../../../core/routing/routes.dart';
 import '../../../../core/theming/colors.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map?;
+      if (args?['showSuccess'] == true) {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            backgroundColor: Colors.green,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            content: const Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white, size: 30),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Password reset successfully!\nPlease login.',
+                    style: TextStyle(color: Colors.white, fontSize: 15),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'OK',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +87,14 @@ class LoginScreen extends StatelessWidget {
               Navigator.pushNamedAndRemoveUntil(
                 context,
                 Routes.adminScreen,
+                (route) => false,
+              );
+            },
+            ownerSuccess: (_) {
+              if (Navigator.canPop(context)) Navigator.pop(context);
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                Routes.ownerScreen,
                 (route) => false,
               );
             },
@@ -120,8 +176,8 @@ class LoginScreen extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // Divider
-                  Row(
-                    children: const [
+                  const Row(
+                    children: [
                       Expanded(
                         child: Divider(color: ColorsManager.borderColor),
                       ),
@@ -207,7 +263,7 @@ class LoginScreen extends StatelessWidget {
                     ),
                   ),
 
-                  // Owner Access (NEW)
+                  // Owner Access
                   TextButton(
                     onPressed: () =>
                         Navigator.pushNamed(context, Routes.ownerLoginScreen),

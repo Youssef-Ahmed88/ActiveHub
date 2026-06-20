@@ -15,7 +15,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // تحميل بيانات الملف الشخصي عند فتح الشاشة
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ProfileCubit>().loadUserProfile(context);
     });
@@ -32,7 +32,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: BlocConsumer<ProfileCubit, ProfileState>(
         listener: (context, state) {
           if (state is ProfileUnauthorized) {
-            // التوكن غير صالح – نخرج المستخدم لتسجيل الدخول
+
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Session expired. Please login again.'),
@@ -118,7 +118,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     label: "Payment Methods",
                     color: ColorsManager.primaryBlue,
                     onPressed: () => Navigator.pushNamed(
-                        context, Routes.paymentMethodsScreen),
+                      context,
+                      Routes.paymentMethodsScreen,
+                    ),
                   ),
                   const SizedBox(height: 12),
 
@@ -127,7 +129,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     label: "Notifications",
                     color: ColorsManager.primaryBlue,
                     onPressed: () => Navigator.pushNamed(
-                        context, Routes.notificationsScreen),
+                      context,
+                      Routes.notificationsScreen,
+                    ),
                   ),
                   const SizedBox(height: 12),
 
@@ -136,7 +140,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     label: "Booking History",
                     color: ColorsManager.primaryBlue,
                     onPressed: () => Navigator.pushNamed(
-                        context, Routes.bookingHistoryScreen),
+                      context,
+                      Routes.bookingHistoryScreen,
+                    ),
                   ),
                   const SizedBox(height: 30),
 
@@ -188,9 +194,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
         minimumSize: const Size(double.infinity, 48),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
@@ -247,8 +251,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel',
-                style: TextStyle(color: ColorsManager.mutedText)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: ColorsManager.mutedText),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -262,8 +268,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: ColorsManager.primaryBlue,
             ),
-            child: const Text('Save',
-                style: TextStyle(color: Colors.white)),
+            child: const Text('Save', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

@@ -43,14 +43,19 @@ class _AdminScreenState extends State<AdminScreen>
       final response = await dio.get('/courts');
       final List data = response.data['data'];
       setState(() {
-        venues = data.map((v) => {
-          'id': v['id'],
-          'name': v['name'],
-          'sport': v['sport']?['name'] ?? '',
-          'price': double.parse(v['price_per_hour'].toString()).toInt(),
-          'available': v['is_available'] == 1,
-          'has_owner': v['owner_id'] != null, // ✅ إضافة
-        }).toList();
+        venues = data
+            .map(
+              (v) => {
+                'id': v['id'],
+                'name': v['name'],
+                'sport': v['sport']?['name'] ?? '',
+                'price': double.parse(v['price_per_hour'].toString()).toInt(),
+                'available': v['is_available'] == 1,
+                'has_owner': v['owner_id'] != null,
+                'address': v['address'] ?? '',
+              },
+            )
+            .toList();
       });
     } catch (e) {
       debugPrint('Error loading venues: $e');
@@ -61,16 +66,22 @@ class _AdminScreenState extends State<AdminScreen>
     try {
       final dio = getIt<Dio>();
       final response = await dio.get('/my-bookings');
-      final List data = response.data is List ? response.data : response.data['data'];
+      final List data = response.data is List
+          ? response.data
+          : response.data['data'];
       setState(() {
-        bookings = data.map((b) => {
-          'id': b['id'],
-          'user': b['user_id'].toString(),
-          'venue': b['court']?['name'] ?? '',
-          'date': b['start_time'].toString().split(' ')[0],
-          'time': b['start_time'].toString().split(' ')[1],
-          'status': b['status'],
-        }).toList();
+        bookings = data
+            .map(
+              (b) => {
+                'id': b['id'],
+                'user': b['user_id'].toString(),
+                'venue': b['court']?['name'] ?? '',
+                'date': b['start_time'].toString().split(' ')[0],
+                'time': b['start_time'].toString().split(' ')[1],
+                'status': b['status'],
+              },
+            )
+            .toList();
       });
     } catch (e) {
       debugPrint('Error loading bookings: $e');
@@ -83,13 +94,17 @@ class _AdminScreenState extends State<AdminScreen>
       final response = await dio.get('/payments');
       final List data = response.data['data'];
       setState(() {
-        payments = data.map((p) => {
-          'id': p['id'],
-          'user': p['booking']?['user_id'].toString() ?? '',
-          'amount': double.parse(p['amount'].toString()).toInt(),
-          'method': p['payment_method'],
-          'status': 'Paid',
-        }).toList();
+        payments = data
+            .map(
+              (p) => {
+                'id': p['id'],
+                'user': p['booking']?['user_id'].toString() ?? '',
+                'amount': double.parse(p['amount'].toString()).toInt(),
+                'method': p['payment_method'],
+                'status': 'Paid',
+              },
+            )
+            .toList();
       });
     } catch (e) {
       debugPrint('Error loading payments: $e');
@@ -102,11 +117,15 @@ class _AdminScreenState extends State<AdminScreen>
       final response = await dio.get('/users?role=owner');
       final List data = response.data['data'] ?? response.data;
       setState(() {
-        owners = data.map((u) => {
-          'id': u['id'],
-          'name': u['full_name'] ?? u['name'] ?? 'Unknown',
-          'email': u['email'],
-        }).toList();
+        owners = data
+            .map(
+              (u) => {
+                'id': u['id'],
+                'name': u['full_name'] ?? u['name'] ?? 'Unknown',
+                'email': u['email'],
+              },
+            )
+            .toList();
       });
     } catch (e) {
       debugPrint('Error loading owners: $e');
@@ -126,13 +145,18 @@ class _AdminScreenState extends State<AdminScreen>
       backgroundColor: ColorsManager.darkBg,
       appBar: AppBar(
         backgroundColor: ColorsManager.cardBg,
-        title: const Text('Admin Panel',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+        title: const Text(
+          'Admin Panel',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
             onPressed: () => Navigator.pushNamedAndRemoveUntil(
-                context, Routes.loginScreen, (route) => false),
+              context,
+              Routes.loginScreen,
+              (route) => false,
+            ),
           ),
         ],
         bottom: TabBar(
@@ -169,7 +193,12 @@ class _AdminScreenState extends State<AdminScreen>
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: venues.isEmpty
-          ? const Center(child: Text('No venues found', style: TextStyle(color: Colors.white70)))
+          ? const Center(
+              child: Text(
+                'No venues found',
+                style: TextStyle(color: Colors.white70),
+              ),
+            )
           : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: venues.length,
@@ -199,31 +228,42 @@ class _AdminScreenState extends State<AdminScreen>
               color: ColorsManager.primaryBlue.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(_getSportIcon(venue['sport']),
-                color: ColorsManager.primaryBlue),
+            child: Icon(
+              _getSportIcon(venue['sport']),
+              color: ColorsManager.primaryBlue,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(venue['name'],
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600)),
+                Text(
+                  venue['name'],
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(venue['sport'],
-                    style: const TextStyle(
-                        color: ColorsManager.mutedText, fontSize: 13)),
+                Text(
+                  venue['sport'],
+                  style: const TextStyle(
+                    color: ColorsManager.mutedText,
+                    fontSize: 13,
+                  ),
+                ),
               ],
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('EGP ${venue['price']}/hr',
-                  style: const TextStyle(color: Colors.green, fontSize: 13)),
+              Text(
+                'EGP ${venue['price']}/hr',
+                style: const TextStyle(color: Colors.green, fontSize: 13),
+              ),
               const SizedBox(height: 4),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -236,8 +276,9 @@ class _AdminScreenState extends State<AdminScreen>
                 child: Text(
                   venue['available'] ? 'Available' : 'Full',
                   style: TextStyle(
-                      color: venue['available'] ? Colors.green : Colors.red,
-                      fontSize: 11),
+                    color: venue['available'] ? Colors.green : Colors.red,
+                    fontSize: 11,
+                  ),
                 ),
               ),
             ],
@@ -249,19 +290,23 @@ class _AdminScreenState extends State<AdminScreen>
             itemBuilder: (_) => [
               const PopupMenuItem(
                 value: 'edit',
-                child: Row(children: [
-                  Icon(Icons.edit, color: Colors.blue, size: 18),
-                  SizedBox(width: 8),
-                  Text('Edit', style: TextStyle(color: Colors.white)),
-                ]),
+                child: Row(
+                  children: [
+                    Icon(Icons.edit, color: Colors.blue, size: 18),
+                    SizedBox(width: 8),
+                    Text('Edit', style: TextStyle(color: Colors.white)),
+                  ],
+                ),
               ),
               const PopupMenuItem(
                 value: 'delete',
-                child: Row(children: [
-                  Icon(Icons.delete, color: Colors.red, size: 18),
-                  SizedBox(width: 8),
-                  Text('Delete', style: TextStyle(color: Colors.white)),
-                ]),
+                child: Row(
+                  children: [
+                    Icon(Icons.delete, color: Colors.red, size: 18),
+                    SizedBox(width: 8),
+                    Text('Delete', style: TextStyle(color: Colors.white)),
+                  ],
+                ),
               ),
             ],
             onSelected: (value) async {
@@ -285,7 +330,12 @@ class _AdminScreenState extends State<AdminScreen>
 
   Widget _buildBookingsTab() {
     return bookings.isEmpty
-        ? const Center(child: Text('No bookings found', style: TextStyle(color: Colors.white70)))
+        ? const Center(
+            child: Text(
+              'No bookings found',
+              style: TextStyle(color: Colors.white70),
+            ),
+          )
         : ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: bookings.length,
@@ -297,7 +347,10 @@ class _AdminScreenState extends State<AdminScreen>
                 decoration: BoxDecoration(
                   color: ColorsManager.cardBg,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: ColorsManager.borderColor, width: 0.5),
+                  border: Border.all(
+                    color: ColorsManager.borderColor,
+                    width: 0.5,
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -305,11 +358,14 @@ class _AdminScreenState extends State<AdminScreen>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('User #${booking['user']}',
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600)),
+                        Text(
+                          'User #${booking['user']}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         _statusBadge(booking['status']),
                       ],
                     ),
@@ -344,24 +400,32 @@ class _AdminScreenState extends State<AdminScreen>
               const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Total Collected',
-                      style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  Text(
+                    'Total Collected',
+                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
                   SizedBox(height: 4),
                 ],
               ),
               Text(
                 'EGP $total',
                 style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800),
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ],
           ),
         ),
         Expanded(
           child: payments.isEmpty
-              ? const Center(child: Text('No payments found', style: TextStyle(color: Colors.white70)))
+              ? const Center(
+                  child: Text(
+                    'No payments found',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                )
               : ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: payments.length,
@@ -374,7 +438,9 @@ class _AdminScreenState extends State<AdminScreen>
                         color: ColorsManager.cardBg,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                            color: ColorsManager.borderColor, width: 0.5),
+                          color: ColorsManager.borderColor,
+                          width: 0.5,
+                        ),
                       ),
                       child: Row(
                         children: [
@@ -382,35 +448,48 @@ class _AdminScreenState extends State<AdminScreen>
                             width: 44,
                             height: 44,
                             decoration: BoxDecoration(
-                              color: ColorsManager.primaryBlue.withValues(alpha: 0.15),
+                              color: ColorsManager.primaryBlue.withValues(
+                                alpha: 0.15,
+                              ),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Icon(Icons.payment,
-                                color: ColorsManager.primaryBlue),
+                            child: const Icon(
+                              Icons.payment,
+                              color: ColorsManager.primaryBlue,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('User #${payment['user']}',
-                                    style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600)),
-                                Text(payment['method'],
-                                    style: const TextStyle(
-                                        color: ColorsManager.mutedText,
-                                        fontSize: 12)),
+                                Text(
+                                  'User #${payment['user']}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  payment['method'],
+                                  style: const TextStyle(
+                                    color: ColorsManager.mutedText,
+                                    fontSize: 12,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Text('EGP ${payment['amount']}',
-                                  style: const TextStyle(
-                                      color: Colors.green,
-                                      fontWeight: FontWeight.w600)),
+                              Text(
+                                'EGP ${payment['amount']}',
+                                style: const TextStyle(
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                               const SizedBox(height: 4),
                               _statusBadge(payment['status']),
                             ],
@@ -455,9 +534,10 @@ class _AdminScreenState extends State<AdminScreen>
       children: [
         Icon(icon, color: ColorsManager.lightBlue, size: 14),
         const SizedBox(width: 6),
-        Text(text,
-            style: const TextStyle(
-                color: ColorsManager.mutedText, fontSize: 13)),
+        Text(
+          text,
+          style: const TextStyle(color: ColorsManager.mutedText, fontSize: 13),
+        ),
       ],
     );
   }
@@ -481,6 +561,7 @@ class _AdminScreenState extends State<AdminScreen>
     String selectedSport = 'Football';
     bool createNewOwner = true;
     int? selectedOwnerId;
+    final locationController = TextEditingController();
     final newOwnerEmailCtrl = TextEditingController();
     final newOwnerNameCtrl = TextEditingController();
     final newOwnerPassCtrl = TextEditingController();
@@ -492,7 +573,10 @@ class _AdminScreenState extends State<AdminScreen>
           backgroundColor: ColorsManager.cardBg,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: ColorsManager.borderColor, width: 0.5),
+            side: const BorderSide(
+              color: ColorsManager.borderColor,
+              width: 0.5,
+            ),
           ),
           title: const Text('Add Venue', style: TextStyle(color: Colors.white)),
           content: SingleChildScrollView(
@@ -518,8 +602,21 @@ class _AdminScreenState extends State<AdminScreen>
                   ),
                 ),
                 const SizedBox(height: 12),
+                TextField(
+                  controller: locationController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelText: 'Location / Address',
+                    labelStyle: TextStyle(color: ColorsManager.mutedText),
+                    prefixIcon: Icon(
+                      Icons.location_on_outlined,
+                      color: ColorsManager.mutedText,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  initialValue: selectedSport,
+                  initialValue: selectedSport, // ✅ value بدل initialValue
                   dropdownColor: ColorsManager.cardBg,
                   style: const TextStyle(color: Colors.white),
                   decoration: const InputDecoration(
@@ -529,27 +626,36 @@ class _AdminScreenState extends State<AdminScreen>
                   items: ['Football', 'Basketball', 'Padel']
                       .map((s) => DropdownMenuItem(value: s, child: Text(s)))
                       .toList(),
-                  onChanged: (val) => setDialogState(() => selectedSport = val!),
+                  onChanged: (val) =>
+                      setDialogState(() => selectedSport = val!),
                 ),
                 const SizedBox(height: 16),
                 const Divider(color: ColorsManager.borderColor),
                 const Text(
                   'Owner Information',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     Expanded(
                       child: GestureDetector(
-                        onTap: () => setDialogState(() => createNewOwner = false),
+                        onTap: () =>
+                            setDialogState(() => createNewOwner = false),
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           decoration: BoxDecoration(
                             color: !createNewOwner
-                                ? ColorsManager.primaryBlue.withValues(alpha: 0.2)
+                                ? ColorsManager.primaryBlue.withValues(
+                                    alpha: 0.2,
+                                  )
                                 : Colors.transparent,
-                            border: Border.all(color: ColorsManager.borderColor),
+                            border: Border.all(
+                              color: ColorsManager.borderColor,
+                            ),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Center(
@@ -568,14 +674,19 @@ class _AdminScreenState extends State<AdminScreen>
                     const SizedBox(width: 8),
                     Expanded(
                       child: GestureDetector(
-                        onTap: () => setDialogState(() => createNewOwner = true),
+                        onTap: () =>
+                            setDialogState(() => createNewOwner = true),
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           decoration: BoxDecoration(
                             color: createNewOwner
-                                ? ColorsManager.primaryBlue.withValues(alpha: 0.2)
+                                ? ColorsManager.primaryBlue.withValues(
+                                    alpha: 0.2,
+                                  )
                                 : Colors.transparent,
-                            border: Border.all(color: ColorsManager.borderColor),
+                            border: Border.all(
+                              color: ColorsManager.borderColor,
+                            ),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Center(
@@ -630,7 +741,7 @@ class _AdminScreenState extends State<AdminScreen>
                     )
                   else
                     DropdownButtonFormField<int>(
-                      initialValue: selectedOwnerId,
+                      initialValue: selectedOwnerId, // ✅ value بدل initialValue
                       dropdownColor: ColorsManager.cardBg,
                       style: const TextStyle(color: Colors.white),
                       decoration: const InputDecoration(
@@ -640,11 +751,14 @@ class _AdminScreenState extends State<AdminScreen>
                       items: owners.map((owner) {
                         return DropdownMenuItem<int>(
                           value: owner['id'],
-                          child: Text(owner['name'],
-                              style: const TextStyle(color: Colors.white)),
+                          child: Text(
+                            owner['name'],
+                            style: const TextStyle(color: Colors.white),
+                          ),
                         );
                       }).toList(),
-                      onChanged: (val) => setDialogState(() => selectedOwnerId = val),
+                      onChanged: (val) =>
+                          setDialogState(() => selectedOwnerId = val),
                     ),
                 ],
               ],
@@ -653,16 +767,20 @@ class _AdminScreenState extends State<AdminScreen>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel',
-                  style: TextStyle(color: ColorsManager.mutedText)),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: ColorsManager.mutedText),
+              ),
             ),
             ElevatedButton(
               onPressed: () async {
-                if (nameController.text.isEmpty || priceController.text.isEmpty) {
+                if (nameController.text.isEmpty ||
+                    priceController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                        content: Text('Please fill venue name and price'),
-                        backgroundColor: Colors.red),
+                      content: Text('Please fill venue name and price'),
+                      backgroundColor: Colors.red,
+                    ),
                   );
                   return;
                 }
@@ -672,8 +790,9 @@ class _AdminScreenState extends State<AdminScreen>
                       newOwnerPassCtrl.text.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content: Text('Please fill all owner fields'),
-                          backgroundColor: Colors.red),
+                        content: Text('Please fill all owner fields'),
+                        backgroundColor: Colors.red,
+                      ),
                     );
                     return;
                   }
@@ -681,8 +800,9 @@ class _AdminScreenState extends State<AdminScreen>
                   if (selectedOwnerId == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content: Text('Please select an existing owner'),
-                          backgroundColor: Colors.red),
+                        content: Text('Please select an existing owner'),
+                        backgroundColor: Colors.red,
+                      ),
                     );
                     return;
                   }
@@ -691,9 +811,16 @@ class _AdminScreenState extends State<AdminScreen>
                   final dio = getIt<Dio>();
                   final Map<String, dynamic> data = {
                     'name': nameController.text,
-                    'sport_id': ['Football', 'Padel', 'Basketball'].indexOf(selectedSport) + 1,
+                    'sport_id':
+                        [
+                          'Football',
+                          'Padel',
+                          'Basketball',
+                        ].indexOf(selectedSport) +
+                        1,
                     'price_per_hour': int.tryParse(priceController.text) ?? 0,
                     'description': '',
+                    'address': locationController.text.trim(),
                     'latitude': 30.0444,
                     'longitude': 31.2357,
                   };
@@ -712,13 +839,15 @@ class _AdminScreenState extends State<AdminScreen>
                   debugPrint('Error adding venue: $e');
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                        content: Text('Error: $e'),
-                        backgroundColor: Colors.red),
+                      content: Text('Error: $e'),
+                      backgroundColor: Colors.red,
+                    ),
                   );
                 }
               },
               style: ElevatedButton.styleFrom(
-                  backgroundColor: ColorsManager.primaryBlue),
+                backgroundColor: ColorsManager.primaryBlue,
+              ),
               child: const Text('Add', style: TextStyle(color: Colors.white)),
             ),
           ],
@@ -730,10 +859,21 @@ class _AdminScreenState extends State<AdminScreen>
   void _showEditVenueDialog(int index) {
     final venue = venues[index];
     final nameController = TextEditingController(text: venue['name']);
-    final priceController = TextEditingController(text: venue['price'].toString());
-    String selectedSport = venue['sport'];
+    final priceController = TextEditingController(
+      text: venue['price'].toString(),
+    );
+
+    // ✅ Fix 1: تأكد إن الـ sport موجود في الـ list
+    String selectedSport =
+        ['Football', 'Basketball', 'Padel'].contains(venue['sport'])
+        ? venue['sport']
+        : 'Football';
+
     bool isAvailable = venue['available'];
     bool hasOwner = venue['has_owner'] ?? false;
+    final locationController = TextEditingController(
+      text: venue['address'] ?? '',
+    );
     final ownerEmailCtrl = TextEditingController();
     final ownerNameCtrl = TextEditingController();
     final ownerPassCtrl = TextEditingController();
@@ -771,6 +911,20 @@ class _AdminScreenState extends State<AdminScreen>
                   ),
                 ),
                 const SizedBox(height: 12),
+                TextField(
+                  controller: locationController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelText: 'Location / Address',
+                    labelStyle: TextStyle(color: ColorsManager.mutedText),
+                    prefixIcon: Icon(
+                      Icons.location_on_outlined,
+                      color: ColorsManager.mutedText,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // ✅ Fix 2: value بدل initialValue
                 DropdownButtonFormField<String>(
                   initialValue: selectedSport,
                   dropdownColor: ColorsManager.cardBg,
@@ -782,17 +936,22 @@ class _AdminScreenState extends State<AdminScreen>
                   items: ['Football', 'Basketball', 'Padel']
                       .map((s) => DropdownMenuItem(value: s, child: Text(s)))
                       .toList(),
-                  onChanged: (val) => setDialogState(() => selectedSport = val!),
+                  onChanged: (val) =>
+                      setDialogState(() => selectedSport = val!),
                 ),
                 const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Available', style: TextStyle(color: Colors.white)),
+                    const Text(
+                      'Available',
+                      style: TextStyle(color: Colors.white),
+                    ),
                     Switch(
                       value: isAvailable,
                       activeThumbColor: ColorsManager.primaryBlue,
-                      onChanged: (val) => setDialogState(() => isAvailable = val),
+                      onChanged: (val) =>
+                          setDialogState(() => isAvailable = val),
                     ),
                   ],
                 ),
@@ -804,14 +963,20 @@ class _AdminScreenState extends State<AdminScreen>
                     decoration: BoxDecoration(
                       color: Colors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                      border: Border.all(
+                        color: Colors.orange.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Row(
                           children: [
-                            Icon(Icons.warning_amber, color: Colors.orange, size: 18),
+                            Icon(
+                              Icons.warning_amber,
+                              color: Colors.orange,
+                              size: 18,
+                            ),
                             SizedBox(width: 8),
                             Text(
                               'No Owner — Add Owner Account',
@@ -829,8 +994,13 @@ class _AdminScreenState extends State<AdminScreen>
                           style: const TextStyle(color: Colors.white),
                           decoration: const InputDecoration(
                             labelText: 'Owner Email *',
-                            labelStyle: TextStyle(color: ColorsManager.mutedText),
-                            prefixIcon: Icon(Icons.email, color: ColorsManager.mutedText),
+                            labelStyle: TextStyle(
+                              color: ColorsManager.mutedText,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.email,
+                              color: ColorsManager.mutedText,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -839,8 +1009,13 @@ class _AdminScreenState extends State<AdminScreen>
                           style: const TextStyle(color: Colors.white),
                           decoration: const InputDecoration(
                             labelText: 'Owner Full Name *',
-                            labelStyle: TextStyle(color: ColorsManager.mutedText),
-                            prefixIcon: Icon(Icons.person, color: ColorsManager.mutedText),
+                            labelStyle: TextStyle(
+                              color: ColorsManager.mutedText,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.person,
+                              color: ColorsManager.mutedText,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -850,8 +1025,13 @@ class _AdminScreenState extends State<AdminScreen>
                           obscureText: true,
                           decoration: const InputDecoration(
                             labelText: 'Owner Password *',
-                            labelStyle: TextStyle(color: ColorsManager.mutedText),
-                            prefixIcon: Icon(Icons.lock, color: ColorsManager.mutedText),
+                            labelStyle: TextStyle(
+                              color: ColorsManager.mutedText,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.lock,
+                              color: ColorsManager.mutedText,
+                            ),
                           ),
                         ),
                       ],
@@ -864,14 +1044,18 @@ class _AdminScreenState extends State<AdminScreen>
                     decoration: BoxDecoration(
                       color: Colors.green.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+                      border: Border.all(
+                        color: Colors.green.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: const Row(
                       children: [
                         Icon(Icons.check_circle, color: Colors.green, size: 16),
                         SizedBox(width: 8),
-                        Text('This venue has an owner',
-                            style: TextStyle(color: Colors.green, fontSize: 12)),
+                        Text(
+                          'This venue has an owner',
+                          style: TextStyle(color: Colors.green, fontSize: 12),
+                        ),
                       ],
                     ),
                   ),
@@ -883,8 +1067,10 @@ class _AdminScreenState extends State<AdminScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel',
-                style: TextStyle(color: ColorsManager.mutedText)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: ColorsManager.mutedText),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -892,9 +1078,16 @@ class _AdminScreenState extends State<AdminScreen>
                 final dio = getIt<Dio>();
                 final Map<String, dynamic> data = {
                   'name': nameController.text,
-                  'sport_id': ['Football', 'Padel', 'Basketball'].indexOf(selectedSport) + 1,
+                  'sport_id':
+                      [
+                        'Football',
+                        'Padel',
+                        'Basketball',
+                      ].indexOf(selectedSport) +
+                      1,
                   'price_per_hour': int.tryParse(priceController.text) ?? 0,
                   'is_available': isAvailable ? 1 : 0,
+                  'address': locationController.text.trim(),
                 };
                 if (!hasOwner &&
                     ownerEmailCtrl.text.isNotEmpty &&
@@ -911,13 +1104,15 @@ class _AdminScreenState extends State<AdminScreen>
                 debugPrint('Error editing venue: $e');
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                      content: Text('Error: $e'),
-                      backgroundColor: Colors.red),
+                    content: Text('Error: $e'),
+                    backgroundColor: Colors.red,
+                  ),
                 );
               }
             },
             style: ElevatedButton.styleFrom(
-                backgroundColor: ColorsManager.primaryBlue),
+              backgroundColor: ColorsManager.primaryBlue,
+            ),
             child: const Text('Save', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -925,4 +1120,3 @@ class _AdminScreenState extends State<AdminScreen>
     );
   }
 }
-

@@ -3,10 +3,10 @@ import 'package:dio/dio.dart';
 
 part 'forgot_password_state.dart';
 
-class ForgetPasswordCubit extends Cubit<ForgotPasswordState> {
-  ForgetPasswordCubit() : super(ForgotPasswordInitial());
+class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
+  ForgotPasswordCubit() : super(ForgotPasswordInitial());
 
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://10.0.2.2:8000/api'));
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://192.168.1.14:8000/api'));
 
   String? savedEmail;
 
@@ -28,9 +28,11 @@ class ForgetPasswordCubit extends Cubit<ForgotPasswordState> {
         savedEmail = email;
         emit(ForgotPasswordCodeSent());
       } else {
-        emit(ForgotPasswordError(
-          response.data['message'] ?? 'Something went wrong',
-        ));
+        emit(
+          ForgotPasswordError(
+            response.data['message'] ?? 'Something went wrong',
+          ),
+        );
       }
     } on DioException catch (e) {
       final message = e.response?.data['message'] ?? 'Failed to send email';
@@ -49,9 +51,9 @@ class ForgetPasswordCubit extends Cubit<ForgotPasswordState> {
       final response = await _dio.post(
         '/auth/reset-password',
         data: {
-          'email':                 savedEmail,
-          'code':                  code,
-          'password':              password,
+          'email': savedEmail,
+          'code': code,
+          'password': password,
           'password_confirmation': passwordConfirmation,
         },
       );
@@ -59,9 +61,11 @@ class ForgetPasswordCubit extends Cubit<ForgotPasswordState> {
       if (response.data['success'] == true) {
         emit(ForgotPasswordSuccess());
       } else {
-        emit(ForgotPasswordError(
-          response.data['message'] ?? 'Something went wrong',
-        ));
+        emit(
+          ForgotPasswordError(
+            response.data['message'] ?? 'Something went wrong',
+          ),
+        );
       }
     } on DioException catch (e) {
       final message = e.response?.data['message'] ?? 'Failed to reset password';

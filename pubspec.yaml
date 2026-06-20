@@ -48,6 +48,7 @@ dependencies:
 
   # Deep Links
   app_links: ^7.0.0
+  webview_flutter: ^4.13.1
 
 dev_dependencies:
   flutter_test:

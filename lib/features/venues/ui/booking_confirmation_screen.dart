@@ -3,6 +3,8 @@ import 'package:flutter_complete_project/core/theming/colors.dart';
 import 'package:flutter_complete_project/core/routing/routes.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_complete_project/features/venues/data/models/venue.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_complete_project/core/di/dependency_injection.dart';
 
 class BookingConfirmationScreen extends StatelessWidget {
   final Venue venue;
@@ -11,19 +13,18 @@ class BookingConfirmationScreen extends StatelessWidget {
   final int duration;
   final double totalPrice;
   final double depositAmount;
+  final int? bookingId;
 
-final int? bookingId;
-
-const BookingConfirmationScreen({
-  super.key,
-  required this.venue,
-  required this.date,
-  required this.timeSlot,
-  required this.duration,
-  required this.totalPrice,
-  required this.depositAmount,
-  this.bookingId, // ← ضيف ده
-});
+  const BookingConfirmationScreen({
+    super.key,
+    required this.venue,
+    required this.date,
+    required this.timeSlot,
+    required this.duration,
+    required this.totalPrice,
+    required this.depositAmount,
+    this.bookingId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +52,6 @@ const BookingConfirmationScreen({
     );
   }
 
-  // ─── Success Header ────────────────────────────────────────
   Widget _buildSuccessHeader() {
     return Column(
       children: [
@@ -63,16 +63,20 @@ const BookingConfirmationScreen({
             shape: BoxShape.circle,
             border: Border.all(color: Colors.green.withOpacity(0.3), width: 2),
           ),
-          child: Icon(Icons.check_circle_outline,
-              color: Colors.green, size: 40.sp),
+          child: Icon(
+            Icons.check_circle_outline,
+            color: Colors.green,
+            size: 40.sp,
+          ),
         ),
         SizedBox(height: 16.h),
         Text(
           'Booking Summary',
           style: TextStyle(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w800,
-              color: Colors.white),
+            fontSize: 20.sp,
+            fontWeight: FontWeight.w800,
+            color: Colors.white,
+          ),
         ),
         SizedBox(height: 6.h),
         Text(
@@ -83,24 +87,32 @@ const BookingConfirmationScreen({
     );
   }
 
-  // ─── Booking Details Card ──────────────────────────────────
   Widget _buildBookingDetailsCard() {
     return _buildCard(
       title: 'Booking Details',
       children: [
         _detailRow(Icons.stadium_outlined, 'Venue', venue.name ?? 'Unknown'),
         _detailRow(Icons.sports, 'Sport', venue.sport?['name'] ?? 'Unknown'),
-        _detailRow(Icons.location_on_outlined, 'Location', venue.address ?? 'Unknown'),
-        _detailRow(Icons.calendar_today, 'Date',
-            '${date.day}/${date.month}/${date.year}'),
+        _detailRow(
+          Icons.location_on_outlined,
+          'Location',
+          venue.address ?? 'Unknown',
+        ),
+        _detailRow(
+          Icons.calendar_today,
+          'Date',
+          '${date.day}/${date.month}/${date.year}',
+        ),
         _detailRow(Icons.access_time, 'Time', timeSlot),
-        _detailRow(Icons.hourglass_bottom_outlined, 'Duration',
-            '$duration ${duration == 1 ? 'hour' : 'hours'}'),
+        _detailRow(
+          Icons.hourglass_bottom_outlined,
+          'Duration',
+          '$duration ${duration == 1 ? 'hour' : 'hours'}',
+        ),
       ],
     );
   }
 
-  // ─── Price Summary Card ────────────────────────────────────
   Widget _buildPriceSummaryCard() {
     return _buildCard(
       title: 'Price Summary',
@@ -115,7 +127,6 @@ const BookingConfirmationScreen({
     );
   }
 
-  // ─── Bottom Bar ────────────────────────────────────────────
   Widget _buildBottomBar(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -127,34 +138,75 @@ const BookingConfirmationScreen({
         mainAxisSize: MainAxisSize.min,
         children: [
           ElevatedButton(
-            onPressed: () {
-              // ✅ بدل ما نعمل تأكيد مباشر، نروح لشاشة الدفع
-Navigator.pushNamed(
-  context,
-  Routes.paymentMethodsScreen,
-  arguments: {
-    'venue': venue,
-    'date': date,
-    'timeSlot': timeSlot,
-    'duration': duration,
-    'totalPrice': totalPrice,
-    'depositAmount': depositAmount,
-    'booking_id': bookingId, // ← ضيف ده
-  },
-);
+            onPressed: () async {
+              try {
+                // ✅ Show loading
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) =>
+                      const Center(child: CircularProgressIndicator()),
+                );
+
+                final dio = getIt<Dio>();
+
+                // ✅ الـ endpoint الصح هو /paymob/pay والـ method هي createPayment
+                final response = await dio.post(
+                  '/paymob/pay',
+                  data: {'booking_id': bookingId ?? 0},
+                );
+
+                if (context.mounted) Navigator.pop(context); // Close loading
+
+                if (response.data['success'] == true) {
+                  final iframeUrl = response.data['data']['iframe_url'];
+                  if (context.mounted) {
+                    Navigator.pushNamed(
+                      context,
+                      Routes.paymobWebView,
+                      arguments: {
+                        'iframe_url': iframeUrl,
+                        'booking_id': bookingId ?? 0,
+                        'amount': depositAmount,
+                      },
+                    );
+                  }
+                } else {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Failed to initiate payment'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  Navigator.pop(context); // Close loading
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: ColorsManager.primaryBlue,
               minimumSize: Size(double.infinity, 50.h),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r)),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
             ),
             child: Text(
               'Pay Deposit — EGP ${depositAmount.toInt()}',
               style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white),
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
             ),
           ),
           SizedBox(height: 10.h),
@@ -173,7 +225,7 @@ Navigator.pushNamed(
       ),
     );
   }
-   // ─── Helpers ───────────────────────────────────────────────
+
   Widget _buildCard({required String title, required List<Widget> children}) {
     return Container(
       width: double.infinity,
@@ -186,16 +238,21 @@ Navigator.pushNamed(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: TextStyle(
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white)),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
           Divider(color: ColorsManager.borderColor, height: 20.h),
-          ...children.map((child) => Padding(
-                padding: EdgeInsets.only(bottom: 12.h),
-                child: child,
-              )),
+          ...children.map(
+            (child) => Padding(
+              padding: EdgeInsets.only(bottom: 12.h),
+              child: child,
+            ),
+          ),
         ],
       ),
     );
@@ -206,16 +263,21 @@ Navigator.pushNamed(
       children: [
         Icon(icon, size: 16.sp, color: ColorsManager.lightBlue),
         SizedBox(width: 10.w),
-        Text('$label:',
-            style: TextStyle(fontSize: 13.sp, color: ColorsManager.mutedText)),
+        Text(
+          '$label:',
+          style: TextStyle(fontSize: 13.sp, color: ColorsManager.mutedText),
+        ),
         SizedBox(width: 6.w),
         Expanded(
-          child: Text(value,
-              style: TextStyle(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white),
-              overflow: TextOverflow.ellipsis),
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
     );
@@ -225,16 +287,22 @@ Navigator.pushNamed(
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label,
-            style: TextStyle(
-                fontSize: isTotal ? 15.sp : 13.sp,
-                color: isTotal ? Colors.white : ColorsManager.mutedText,
-                fontWeight: isTotal ? FontWeight.w700 : FontWeight.w400)),
-        Text(value,
-            style: TextStyle(
-                fontSize: isTotal ? 15.sp : 13.sp,
-                color: isTotal ? Colors.white : ColorsManager.mutedText,
-                fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500)),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: isTotal ? 15.sp : 13.sp,
+            color: isTotal ? Colors.white : ColorsManager.mutedText,
+            fontWeight: isTotal ? FontWeight.w700 : FontWeight.w400,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: isTotal ? 15.sp : 13.sp,
+            color: isTotal ? Colors.white : ColorsManager.mutedText,
+            fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
+          ),
+        ),
       ],
     );
   }
@@ -250,23 +318,39 @@ Navigator.pushNamed(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Deposit Required (30%)',
-                style: TextStyle(fontSize: 12.sp, color: ColorsManager.mutedText)),
-            SizedBox(height: 2.h),
-            Text('Pay now to confirm your booking',
-                style: TextStyle(fontSize: 11.sp, color: ColorsManager.subtleText)),
-          ]),
-          Text('EGP ${depositAmount.toInt()}',
-              style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w800,
-                  color: ColorsManager.lightBlue)),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Deposit Required (30%)',
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: ColorsManager.mutedText,
+                ),
+              ),
+              SizedBox(height: 2.h),
+              Text(
+                'Pay now to confirm your booking',
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  color: ColorsManager.subtleText,
+                ),
+              ),
+            ],
+          ),
+          Text(
+            'EGP ${depositAmount.toInt()}',
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w800,
+              color: ColorsManager.lightBlue,
+            ),
+          ),
         ],
       ),
     );
   }
-    // ─── Payment Success Dialog ────────────────────────────────
+
   void _showPaymentSuccess(BuildContext context) {
     showDialog(
       context: context,
@@ -292,10 +376,7 @@ Navigator.pushNamed(
             SizedBox(height: 8.h),
             Text(
               'Your deposit has been paid successfully.',
-              style: TextStyle(
-                fontSize: 13.sp,
-                color: ColorsManager.mutedText,
-              ),
+              style: TextStyle(fontSize: 13.sp, color: ColorsManager.mutedText),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 20.h),

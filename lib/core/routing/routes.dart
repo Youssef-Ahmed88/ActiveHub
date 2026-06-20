@@ -25,6 +25,7 @@ class Routes {
   // Payment & Notifications
   static const String paymentMethodsScreen = '/paymentMethodsScreen';
   static const String notificationsScreen = '/notificationsScreen';
+  static const String paymobWebView = '/paymobWebView';
 
   // Admin Panel
   static const String adminSignUpScreen = '/adminSignUpScreen';

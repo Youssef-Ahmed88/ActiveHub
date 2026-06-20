@@ -4,14 +4,14 @@ import 'package:flutter_complete_project/core/routing/routes.dart';
 import 'package:flutter_complete_project/core/theming/colors.dart';
 import 'package:flutter_complete_project/features/login/ui/logic/forgot_password_cubit.dart';
 
-class ForgetPasswordScreen extends StatefulWidget {
-  const ForgetPasswordScreen({super.key});
+class ForgotPasswordScreen extends StatefulWidget {
+  const ForgotPasswordScreen({super.key});
 
   @override
-  State<ForgetPasswordScreen> createState() => _ForgetPasswordScreenState();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final emailController = TextEditingController();
   final List<TextEditingController> otpControllers = List.generate(
     6,
@@ -30,32 +30,82 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
   }
 
   void _showDialog() {
+    final rootContext = context;
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => BlocProvider.value(
-        value: context.read<ForgetPasswordCubit>(),
+        value: context.read<ForgotPasswordCubit>(),
         child: StatefulBuilder(
           builder: (context, setDialogState) =>
-              BlocConsumer<ForgetPasswordCubit, ForgotPasswordState>(
-                listener: (context, state) {
+              BlocConsumer<ForgotPasswordCubit, ForgotPasswordState>(
+                listener: (context, state) async {
                   if (state is ForgotPasswordCodeSent) {
                     setDialogState(() => codeSent = true);
                   } else if (state is ForgotPasswordSuccess) {
-                    Navigator.pop(context);
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      Routes.loginScreen,
-                      (route) => false,
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('✅ Password reset successfully!'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
+                    // ✅ أغلق الـ dialog الأول
+                    Navigator.of(rootContext, rootNavigator: true).pop();
+
+                    await Future.delayed(const Duration(milliseconds: 300));
+
+                    if (rootContext.mounted) {
+                      // ✅ اعرض الـ success dialog
+                      await showDialog(
+                        context: rootContext,
+                        barrierDismissible: false,
+                        builder: (_) => AlertDialog(
+                          backgroundColor: Colors.green.shade700,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          content: const Row(
+                            children: [
+                              Icon(
+                                Icons.check_circle,
+                                color: Colors.white,
+                                size: 30,
+                              ),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  '✅ Password reset successfully!\nPlease login with your new password.',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(rootContext),
+                              child: const Text(
+                                'OK',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      // ✅ بعد ما يضغط OK روح للـ login
+                      if (rootContext.mounted) {
+                        Navigator.of(
+                          rootContext,
+                          rootNavigator: true,
+                        ).pushNamedAndRemoveUntil(
+                          Routes.loginScreen,
+                          (route) => false,
+                        );
+                      }
+                    }
                   } else if (state is ForgotPasswordError) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    ScaffoldMessenger.of(rootContext).showSnackBar(
                       SnackBar(
                         content: Text('❌ ${state.error}'),
                         backgroundColor: Colors.red,
@@ -130,7 +180,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                                     keyboardType: TextInputType.number,
                                     maxLength: 1,
                                     obscureText: true,
-                                    obscuringCharacter: '*', // ✅
+                                    obscuringCharacter: '*',
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 18,
@@ -198,7 +248,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context);
-                          Navigator.pop(context);
+                          Navigator.pop(rootContext);
                         },
                         child: const Text(
                           'Cancel',
@@ -211,7 +261,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                             : () {
                                 if (!codeSent) {
                                   context
-                                      .read<ForgetPasswordCubit>()
+                                      .read<ForgotPasswordCubit>()
                                       .sendResetEmail(
                                         emailController.text.trim(),
                                       );
@@ -220,7 +270,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                                       .map((c) => c.text)
                                       .join();
                                   context
-                                      .read<ForgetPasswordCubit>()
+                                      .read<ForgotPasswordCubit>()
                                       .resetPassword(
                                         code: code,
                                         password: passwordController.text,
