@@ -38,7 +38,7 @@ class BookingController extends Controller
         ]);
     }
 
-    // ✅ PATCH /api/bookings/{id}/confirm
+    //  PATCH /api/bookings/{id}/confirm
     public function confirm(int $id)
     {
         $booking = Booking::with('court.sport')->findOrFail($id);
@@ -51,7 +51,7 @@ class BookingController extends Controller
 
         Notification::create([
             'user_id'    => Auth::id(),
-            'message'    => "Your booking at {$booking->court->name} has been confirmed! ✅",
+            'message'    => "Your booking at {$booking->court->name} has been confirmed! ",
             'sport_type' => $booking->court->sport?->name ?? 'Sport',
             'is_read'    => false,
         ]);
@@ -116,7 +116,7 @@ class BookingController extends Controller
  
         Notification::create([
             'user_id'    => Auth::id(),
-            'message'    => "Your booking has been created and is waiting for payment. ⏳",
+            'message'    => "Your booking has been created and is waiting for payment.",
             'sport_type' => $court->sport?->name ?? 'Sport',
             'is_read'    => false,
         ]);
@@ -142,7 +142,7 @@ class BookingController extends Controller
  
         Notification::create([
             'user_id'    => Auth::id(),
-            'message'    => "Your booking has been cancelled successfully. ❌",
+            'message'    => "Your booking has been cancelled successfully. âŒ",
             'sport_type' => $booking->court->sport?->name ?? 'Sport',
             'is_read'    => false,
         ]);
@@ -155,3 +155,7 @@ class BookingController extends Controller
         ]);
     }
 }
+
+
+
+
